@@ -37,9 +37,6 @@ START-OF-SELECTION.
       nothingselected = 2
 *     OTHERS          = 3
     .
-  IF sy-subrc <> 0.
-
-  ENDIF.
 
   s_pernr[] = lt_pernr[].
 
