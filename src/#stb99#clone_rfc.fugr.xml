@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>RFC Funktionen</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>/STB99/LCLONE_RFCTOP</SOBJ_NAME>
+    <SOBJ_NAME>/STB99/SAPLCLONE_RFC</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>/STB99/CLONE_DATA</FUNCNAME>
+     <REMOTE_CALL>R</REMOTE_CALL>
+     <SHORT_TEXT>Zugriff auf Quellsystem</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>P_CUSTOM</PARAMETER>
+       <TYP>/STB99/CT2_CUST</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>GR_INFTY</PARAMETER>
+       <TYP>/STB99/STB_INFTY_RANGE_T</TYP>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>S_PERNR</PARAMETER>
+       <TYP>/STB99/RANGE_PERNR_T</TYP>
+      </RSCHA>
+     </CHANGING>
+     <EXPORT>
+      <RSEXP>
+       <PARAMETER>XSTRTAB</PARAMETER>
+       <TYP>/STB99/XTAB</TYP>
+      </RSEXP>
+      <RSEXP>
+       <PARAMETER>CLONED_TABLES</PARAMETER>
+       <TYP>/STB99/TABLES_T</TYP>
+      </RSEXP>
+     </EXPORT>
+     <EXCEPTION>
+      <RSEXC>
+       <EXCEPTION>NO_DATA</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
+       <EXCEPTION>NOTHINGSELECTED</EXCEPTION>
+      </RSEXC>
+     </EXCEPTION>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>P_CUSTOM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Customizing Clonetool2</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>GR_INFTY</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Selektion Infotypen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>XSTRTAB</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>test</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>CLONED_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Rückgabe Tabellennamen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>S_PERNR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Range Personalnummern</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>NO_DATA</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>keine Daten  selektiert</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>NOTHINGSELECTED</PARAMETER>
+       <KIND>X</KIND>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
