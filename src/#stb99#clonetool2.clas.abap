@@ -537,16 +537,16 @@ ENDMETHOD.
     DATA:
       lr_data TYPE REF TO data,
       lx      TYPE xstring.
-    DATA: s_ntdic   TYPE /stb99/range_ntdic_t,
-          l_ntdic   TYPE /stb99/range_ntdic,
+    DATA: s_ndtic   TYPE /stb99/range_ndtic_t,
+          l_ndtic   TYPE /stb99/range_ndtic,
           ls_cloned TYPE /stb99/tables.
     FIELD-SYMBOLS:
       <lt_stat>  TYPE STANDARD TABLE,
       <ls_stat>  TYPE any,
       <lt_itab>  TYPE STANDARD TABLE,
-      <lv_ntdic> TYPE any.
+      <lv_ndtic> TYPE any.
 
-    REFRESH s_ntdic.
+    REFRESH s_ndtic.
 
 
     " Erste Tabelle dynamisch lesen
@@ -567,14 +567,14 @@ ENDMETHOD.
     ENDIF.
 
     LOOP AT <lt_stat> ASSIGNING <ls_stat>.
-      ASSIGN COMPONENT 'NTDIC' OF STRUCTURE <ls_stat> TO <lv_ntdic>.
-      CHECK sy-subrc = 0 AND <lv_ntdic> IS NOT INITIAL.
+      ASSIGN COMPONENT 'ndtic' OF STRUCTURE <ls_stat> TO <lv_ndtic>.
+      CHECK sy-subrc = 0 AND <lv_ndtic> IS NOT INITIAL.
 
-      CLEAR l_ntdic.
-      l_ntdic-low    = <lv_ntdic>.
-      l_ntdic-sign   = 'I'.
-      l_ntdic-option = 'EQ'.
-      COLLECT l_ntdic INTO s_ntdic.
+      CLEAR l_ndtic.
+      l_ndtic-low    = <lv_ndtic>.
+      l_ndtic-sign   = 'I'.
+      l_ndtic-option = 'EQ'.
+      COLLECT l_ndtic INTO s_ndtic.
     ENDLOOP.
 
     CREATE DATA lr_data TYPE STANDARD TABLE OF ('P01T_TRANS').
@@ -583,7 +583,7 @@ ENDMETHOD.
     SELECT *
       FROM ('P01T_TRANS')
       INTO TABLE <lt_stat>
-      WHERE ntdic IN s_ntdic.
+      WHERE ndtic IN s_ndtic.
 
     IF <lt_stat>[] IS NOT INITIAL.
       EXPORT p1 = <lt_stat> TO DATA BUFFER lx.
@@ -1674,7 +1674,7 @@ METHOD READ_TABLE_ARBEITGEBERKONTO.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01AK%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01AK%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
@@ -1691,7 +1691,7 @@ METHOD READ_TABLE_BEITRAGSNACHWEISE.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01BN%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01BN%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
@@ -1708,7 +1708,7 @@ METHOD READ_TABLE_BETRIEBSDATENPFL.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01BD%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01BD%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
@@ -1751,7 +1751,7 @@ METHOD READ_TABLE_EUBP.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01EBP%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01EBP%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
@@ -1768,7 +1768,7 @@ METHOD READ_TABLE_LSTA.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01T_A_%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01T_A_%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
@@ -1785,7 +1785,7 @@ METHOD READ_TABLE_RENTENUEBERSICHT.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd03l INTO l_table WHERE tabname LIKE 'P01RUE%'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01RUE%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
