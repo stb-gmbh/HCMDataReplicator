@@ -13,3 +13,8 @@
 * INCLUDE /STB99/LTABPFLEGEE...              " Events
 * INCLUDE /STB99/LTABPFLEGEP...              " Local class implement.
 * INCLUDE /STB99/LTABPFLEGET99.              " ABAP Unit tests
+  INCLUDE /STB99/LTABPFLEGEF00                    . " subprograms
+  INCLUDE /STB99/LTABPFLEGEI00                    . " PAI modules
+  INCLUDE LSVIMFXX                                . " subprograms
+  INCLUDE LSVIMOXX                                . " PBO modules
+  INCLUDE LSVIMIXX                                . " PAI modules

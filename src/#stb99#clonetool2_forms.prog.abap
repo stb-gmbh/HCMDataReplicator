@@ -130,7 +130,7 @@ FORM delete_target_pernr .
         txt4  = TEXT-a05.
     RAISE job_not_started.
   ENDIF.
-  if p_det IS NOT INITIAL.WRITE: / 'Job', jobname, 'zum Löschen der Daten ausgeführt'.endif.
+  IF p_det IS NOT INITIAL.WRITE: / 'Job', jobname, 'zum Löschen der Daten ausgeführt'.ENDIF.
 
 ENDFORM.                    " DELETE_TARGET_PERNR
 *&---------------------------------------------------------------------*
@@ -191,10 +191,10 @@ FORM write_data_to_tables .
         IF p_test IS INITIAL.
           INSERT (ls_cloned-tabname) FROM TABLE <lt_itab>.
           IF sy-subrc EQ 0.
-            if p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze'.endif.
+            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze'.ENDIF.
           ENDIF.
         ELSE.
-          if p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.endif.
+          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
         ENDIF.
 
       CATCH cx_sy_open_sql_db.
@@ -202,13 +202,63 @@ FORM write_data_to_tables .
           DELETE (ls_cloned-tabname) FROM TABLE <lt_itab>.
           INSERT (ls_cloned-tabname) FROM TABLE <lt_itab>.
           IF sy-subrc EQ 0.
-            if p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze. Sätze wurden vorher gelöscht'.endif.
+            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze. Sätze wurden vorher gelöscht'.ENDIF.
           ENDIF.
         ELSE.
-          if p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.endif.
+          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
         ENDIF.
     ENDTRY.
 
   ENDLOOP.
 
 ENDFORM.                    " WRITE_DATA_TO_TABLES
+*&---------------------------------------------------------------------*
+*&      Form  GET_CUSTOMIZING
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM get_customizing .
+  DATA: ls_tmp   TYPE /stb99/ct2_cust,
+        lr_desc  TYPE REF TO cl_abap_structdescr,
+        lv_param TYPE string.
+
+  FIELD-SYMBOLS:
+    <field> TYPE any,
+    <param> TYPE any.
+
+  SELECT SINGLE *
+    FROM /stb99/ct2_cust
+    INTO @ls_tmp
+   WHERE destination = @p_dest.
+
+  IF sy-subrc <> 0.
+    RETURN.
+  ENDIF.
+
+  lr_desc ?= cl_abap_typedescr=>describe_by_data( ls_tmp ).
+
+  LOOP AT lr_desc->components INTO DATA(ls_comp).
+
+    ASSIGN COMPONENT ls_comp-name OF STRUCTURE ls_tmp TO <field>.
+    IF sy-subrc <> 0.
+      CONTINUE.
+    ENDIF.
+
+    IF ls_comp-name = 'DESTINATION'.
+      lv_param = 'P_DEST'.
+    ELSE.
+      CONCATENATE 'P_' ls_comp-name INTO lv_param.
+    ENDIF.
+
+    ASSIGN (lv_param) TO <param>.
+    IF sy-subrc <> 0.
+      CONTINUE.
+    ENDIF.
+
+    <param> = <field>.
+
+  ENDLOOP.
+ENDFORM.

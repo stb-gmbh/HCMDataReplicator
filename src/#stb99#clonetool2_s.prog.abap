@@ -50,9 +50,9 @@ SELECTION-SCREEN BEGIN OF SCREEN 030 AS SUBSCREEN.
 *----------------------------------------------------------------------*
 * Radiobuttonblock fuer Abrechnung
 PARAMETERS: p_pa03    AS CHECKBOX.
-PARAMETERS: p_calc AS CHECKBOX DEFAULT 'X'.
+PARAMETERS: p_calc AS CHECKBOX.
 PARAMETERS: p_pcp0 AS CHECKBOX.
-PARAMETERS: p_deuv AS CHECKBOX DEFAULT 'X'.
+PARAMETERS: p_deuv AS CHECKBOX.
 PARAMETERS: p_lstb AS CHECKBOX.
 PARAMETERS: p_elsta AS CHECKBOX.
 PARAMETERS: p_elena AS CHECKBOX.
@@ -96,10 +96,32 @@ SELECTION-SCREEN:
 * Selektionsbild - Testoptionen
 *----------------------------------------------------------------------*
 SELECTION-SCREEN BEGIN OF BLOCK b4 WITH FRAME TITLE text-006.
-PARAMETERS: p_desti TYPE RFCDEST.
+PARAMETERS: p_dest TYPE RFCDEST.
 PARAMETERS: p_test AS CHECKBOX DEFAULT 'X'.
 
 SELECTION-SCREEN END OF BLOCK b4.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_dest.
+
+  DATA lt_return TYPE TABLE OF ddshretval.
+
+  CALL FUNCTION 'F4IF_FIELD_VALUE_REQUEST'
+    EXPORTING
+      tabname    = 'RFCDES'
+      fieldname  = 'RFCDEST'
+      dynpprog   = sy-repid
+      dynpnr     = sy-dynnr
+      dynprofield = 'P_DEST'
+    TABLES
+      return_tab = lt_return.
+
+  READ TABLE lt_return INTO DATA(ls_return) INDEX 1.
+  IF sy-subrc = 0.
+    p_dest = ls_return-fieldval.
+  ENDIF.
+
+  PERFORM get_customizing.
+
 
 *----------------------------------------------------------------------*
 INITIALIZATION.
@@ -124,29 +146,7 @@ INITIALIZATION.
        no_active_plvar   = 0                                  "StB-CP
        OTHERS            = 0.                                 "StB-CP
 
-  DATA: ls_tmp TYPE /stb99/ct2_cust.
-  SELECT SINGLE * FROM /stb99/ct2_cust INTO ls_tmp.
 
-  p_numkr = ls_tmp-numkr.
-  p_wegid = ls_tmp-wegid.
-  p_plvar = ls_tmp-plvar.
-  p_depth = ls_tmp-depth.
-  p_org = ls_tmp-org.
-  p_pa03 = ls_tmp-pa03.
-  p_calc = ls_tmp-calc.
-  p_pcp0 = ls_tmp-pcp0.
-  p_deuv = ls_tmp-deuv.
-  p_lstb = ls_tmp-lstb.
-  p_elsta = ls_tmp-elsta.
-  p_elena = ls_tmp-elena.
-  p_bv = ls_tmp-bv.
-  p_ea = ls_tmp-ea.
-  p_ee = ls_tmp-ee.
-  p_rbm = ls_tmp-rbm.
-  p_sv = ls_tmp-sv.
-  p_zs = ls_tmp-zs.
-  p_bav = ls_tmp-bav.
-  p_time = ls_tmp-time.
-  p_lohn = ls_tmp-lohn.
-  p_trvl = ls_tmp-trvl.
-  p_desti = ls_tmp-destination.
+  if p_dest IS NOT INITIAL.
+    PERFORM get_customizing.
+  endif.

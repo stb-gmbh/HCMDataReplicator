@@ -22,7 +22,7 @@ FUNCTION /stb99/clone_data.
   REFRESH: cloned_tables.
   REFRESH: xstrtab.
 
-  CALL METHOD clonetool2->read_tables_to_clone
+  CALL METHOD clonetool2->clone
     EXPORTING
       gr_infty      = gr_infty
     CHANGING

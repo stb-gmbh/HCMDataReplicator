@@ -15,6 +15,13 @@ public section.
   methods ADD_GUID_TABLE
     importing
       !TABLE type TABNAME .
+  methods CLONE
+    importing
+      !GR_INFTY type /STB99/STB_INFTY_RANGE_T
+    changing
+      !S_PERNR type /STB99/RANGE_PERNR_T
+      !CLONED_TABLES type /STB99/TABLES_T
+      !XSTRTAB type /STB99/XTAB .
   methods CONSTRUCTOR .
   methods GET_TABLES_TO_CLONE .
   methods READ_TABLES_ADDITIONAL .
@@ -28,13 +35,6 @@ public section.
   methods READ_TABLES_ORGMAN .
   methods READ_TABLES_PCP0 .
   methods READ_TABLES_TIME .
-  methods READ_TABLES_TO_CLONE
-    importing
-      !GR_INFTY type /STB99/STB_INFTY_RANGE_T
-    changing
-      !S_PERNR type /STB99/RANGE_PERNR_T
-      !CLONED_TABLES type /STB99/TABLES_T
-      !XSTRTAB type /STB99/XTAB .
   methods READ_TABLES_TRVL .
   methods READ_TABLE_ARBEITGEBERKONTO .
   methods READ_TABLE_BEITRAGSNACHWEISE .
@@ -62,6 +62,7 @@ private section.
   methods READ_MELD_BV .
   methods READ_MELD_DEUEV .
   methods READ_MELD_EA .
+  methods READ_MELD_EAU .
   methods READ_MELD_EE .
   methods READ_MELD_ELENA .
   methods READ_MELD_ELSTAM .
@@ -69,7 +70,6 @@ private section.
   methods READ_MELD_LSTB .
   methods READ_MELD_RBM .
   methods READ_MELD_ZS .
-  methods READ_MELD_EAU .
 ENDCLASS.
 
 
@@ -89,6 +89,64 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   ENDMETHOD.
+
+
+METHOD CLONE.
+
+  DATA: ls_pernr LIKE LINE OF at_pernr.
+
+  "Personalnummern ermitteln
+  CLEAR at_pernr[].
+  SELECT pernr FROM pa0003 INTO ls_pernr-low WHERE pernr IN s_pernr
+    ORDER BY pernr ASCENDING.
+    ls_pernr-sign = 'I'.
+    ls_pernr-option = 'EQ'.
+    APPEND ls_pernr TO at_pernr.
+  ENDSELECT.
+
+  "Parameter von Quellsystem (welche Verfahren etc.)
+  at_infty[] = gr_infty[].
+
+*NEUNEUENENU
+  CALL METHOD me->read_tables_infotypes.
+  CALL METHOD me->read_tables_additional.
+  CALL METHOD me->read_tables_cluster.
+
+  "Zeitereignisse
+  IF customizing-time  IS NOT INITIAL. CALL METHOD me->read_tables_time.   ENDIF.     "TEVEN
+  IF customizing-org   IS NOT INITIAL. CALL METHOD me->read_tables_orgman. ENDIF.     "Orgmanagement
+  IF customizing-trvl  IS NOT INITIAL. CALL METHOD me->read_tables_trvl.   ENDIF.     "Reisekosten      "todo
+  IF customizing-numkr IS NOT INITIAL. CALL METHOD me->read_tables_numkr.  ENDIF.     "Nummernkreise
+  IF customizing-pcp0  IS NOT INITIAL. CALL METHOD me->read_tables_pcp0.   ENDIF.     "Buchungsbelege
+  IF customizing-a1    IS NOT INITIAL. CALL METHOD me->read_meld_a1.       ENDIF.     "Meldeverfahren A1
+  IF customizing-elena IS NOT INITIAL. CALL METHOD me->read_meld_elena.    ENDIF.     "Meldeverfahren ELENA
+  IF customizing-rbm   IS NOT INITIAL. CALL METHOD me->read_meld_rbm.      ENDIF.     "Meldeverfahren RBM
+  IF customizing-bv    IS NOT INITIAL. CALL METHOD me->read_meld_bv.       ENDIF.     "Meldeverfahren BV
+  IF customizing-ea    IS NOT INITIAL. CALL METHOD me->read_meld_ea.       ENDIF.     "Meldeverfahren EA
+  IF customizing-ee    IS NOT INITIAL. CALL METHOD me->read_meld_ee.       ENDIF.     "Meldeverfahren EE
+  IF customizing-deuv  IS NOT INITIAL. CALL METHOD me->read_meld_DEUEV.    ENDIF.     "Meldeverfahren deüv
+
+  "ab hier noch Parameter anlegen
+  CALL METHOD me->read_meld_lstb.     "Meldeverfahren LStB
+  CALL METHOD me->read_meld_elstam.   ""Meldeverfahren ElStAM
+
+
+  "keine Personalnummer oder nicht sinnvoll->komplett
+  CALL METHOD me->read_table_beitragsnachweise. "Meldeverfahren Beitragsnachweise
+  CALL METHOD me->read_table_lsta.              "Meldeverfahren LStA
+  CALL METHOD me->read_table_betriebsdatenpfl.  "Meldeverfahren Betriebsdaten
+  CALL METHOD me->READ_TABLE_ARBEITGEBERKONTO.  "Meldeverfahren Arbeitgeberkonto
+  CALL METHOD me->READ_TABLE_RENTENUEBERSICHT.  ""Meldeverfahren Rentenübersicht
+  CALL METHOD me->READ_TABLE_eubp.
+
+
+
+  "Rückgabe an FuB
+  xstrtab = at_xstrtab.
+  cloned_tables = at_cloned_tables.
+  s_pernr = at_pernr.
+
+ENDMETHOD.
 
 
 method CONSTRUCTOR.
@@ -535,7 +593,7 @@ ENDMETHOD.
 
     CALL METHOD me->read_tables_meld_with_guid
       EXPORTING
-        tab_guid = ''
+        tab_guid = 'P01E2_ADM'
         add_tab  = add_guid_tabs.
 
 
@@ -1611,63 +1669,6 @@ METHOD read_tables_time.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'TEVEN'.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'TEVEN_MORE'.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTQUODED'.
-
-ENDMETHOD.
-
-
-METHOD read_tables_to_clone.
-
-  DATA: ls_pernr LIKE LINE OF at_pernr.
-
-  "Personalnummern ermitteln
-  CLEAR at_pernr[].
-  SELECT pernr FROM pa0003 INTO ls_pernr-low WHERE pernr IN s_pernr.
-    ls_pernr-sign = 'I'.
-    ls_pernr-option = 'EQ'.
-    APPEND ls_pernr TO at_pernr.
-  ENDSELECT.
-
-  "Parameter von Quellsystem (welche Verfahren etc.)
-  at_infty[] = gr_infty[].
-
-*NEUNEUENENU
-  CALL METHOD me->read_tables_infotypes.
-  CALL METHOD me->read_tables_additional.
-  CALL METHOD me->read_tables_cluster.
-
-  "Zeitereignisse
-  IF customizing-time  IS NOT INITIAL. CALL METHOD me->read_tables_time.   ENDIF.     "TEVEN
-  IF customizing-org   IS NOT INITIAL. CALL METHOD me->read_tables_orgman. ENDIF.     "Orgmanagement
-  IF customizing-trvl  IS NOT INITIAL. CALL METHOD me->read_tables_trvl.   ENDIF.     "Reisekosten      "todo
-  IF customizing-numkr IS NOT INITIAL. CALL METHOD me->read_tables_numkr.  ENDIF.     "Nummernkreise
-  IF customizing-pcp0  IS NOT INITIAL. CALL METHOD me->read_tables_pcp0.   ENDIF.     "Buchungsbelege
-  IF customizing-a1    IS NOT INITIAL. CALL METHOD me->read_meld_a1.       ENDIF.     "Meldeverfahren A1
-  IF customizing-elena IS NOT INITIAL. CALL METHOD me->read_meld_elena.    ENDIF.     "Meldeverfahren ELENA
-  IF customizing-rbm   IS NOT INITIAL. CALL METHOD me->read_meld_rbm.      ENDIF.     "Meldeverfahren RBM
-  IF customizing-bv    IS NOT INITIAL. CALL METHOD me->read_meld_bv.       ENDIF.     "Meldeverfahren BV
-  IF customizing-ea    IS NOT INITIAL. CALL METHOD me->read_meld_ea.       ENDIF.     "Meldeverfahren EA
-  IF customizing-ee    IS NOT INITIAL. CALL METHOD me->read_meld_ee.       ENDIF.     "Meldeverfahren EE
-  IF customizing-deuv  IS NOT INITIAL. CALL METHOD me->read_meld_DEUEV.    ENDIF.     "Meldeverfahren deüv
-
-  "ab hier noch Parameter anlegen
-  CALL METHOD me->read_meld_lstb.     "Meldeverfahren LStB
-  CALL METHOD me->read_meld_elstam.   ""Meldeverfahren ElStAM
-
-
-  "keine Personalnummer oder nicht sinnvoll->komplett
-  CALL METHOD me->read_table_beitragsnachweise. "Meldeverfahren Beitragsnachweise
-  CALL METHOD me->read_table_lsta.              "Meldeverfahren LStA
-  CALL METHOD me->read_table_betriebsdatenpfl.  "Meldeverfahren Betriebsdaten
-  CALL METHOD me->READ_TABLE_ARBEITGEBERKONTO.  "Meldeverfahren Arbeitgeberkonto
-  CALL METHOD me->READ_TABLE_RENTENUEBERSICHT.  ""Meldeverfahren Rentenübersicht
-  CALL METHOD me->READ_TABLE_eubp.
-
-
-
-  "Rückgabe an FuB
-  xstrtab = at_xstrtab.
-  cloned_tables = at_cloned_tables.
-  s_pernr = at_pernr.
 
 ENDMETHOD.
 
