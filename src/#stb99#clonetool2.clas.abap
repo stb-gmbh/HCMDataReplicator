@@ -69,6 +69,7 @@ private section.
   methods READ_MELD_LSTB .
   methods READ_MELD_RBM .
   methods READ_MELD_ZS .
+  methods READ_MELD_EAU .
 ENDCLASS.
 
 
@@ -311,6 +312,35 @@ ENDMETHOD.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01EA_MELD'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01EA_VRBN'.
 
+
+    CALL METHOD me->read_tables_meld_with_guid
+      EXPORTING
+        tab_guid = gui_tabname
+        add_tab  = add_guid_tabs.
+
+
+
+
+  ENDMETHOD.
+
+
+  METHOD read_meld_eau.
+    CONSTANTS: gui_tabname TYPE tabname VALUE 'P01_EAU_STAT'.
+
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
+
+    CLEAR add_guid_tabs[].
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_ANSPRPAR'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_ARBNEHM'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_AU_DATEN'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_FEHLER'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_HIST'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_IT2001'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_MELD_AU'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_NOTIFDAT'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_PRES_PNR'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_STAT'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_STRGDAT'.
 
     CALL METHOD me->read_tables_meld_with_guid
       EXPORTING
