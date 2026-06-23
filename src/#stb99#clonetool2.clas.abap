@@ -1016,7 +1016,11 @@ METHOD read_tables_infotypes.
 
  SELECT * FROM dd03l INTO CORRESPONDING FIELDS OF ls_table_to_clone
     WHERE tabname BETWEEN 'PA0000' AND 'PA9999'
-      AND fieldname EQ 'PERNR'.
+*{   REPLACE        H4DK900039                                        1
+*\      AND fieldname EQ 'PERNR'.
+      AND fieldname EQ 'PERNR'
+      ORDER BY tabname ASCENDING.
+*}   REPLACE
 
     CHECK ls_table_to_clone-tabname ne 'PA2001_UGR'
       AND ls_table_to_clone-tabname ne 'PA2002_UGR'
