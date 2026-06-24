@@ -142,10 +142,11 @@ ENDFORM.                    " DELETE_TARGET_PERNR
 *  <--  p2        text
 *----------------------------------------------------------------------*
 FORM liste .
-
+  clear pernr_anzhl.
   IF p_list IS NOT INITIAL.
     LOOP AT s_pernr.
       WRITE:/ 'Personalnummer', s_pernr-low, 'kopiert'.
+      add 1 to pernr_anzhl.
     ENDLOOP.
   ENDIF.
 ENDFORM.                    " LISTE

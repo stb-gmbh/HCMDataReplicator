@@ -29,3 +29,5 @@ DATA: p_custom TYPE /stb99/ct2_cust,
 
 TYPES: tr_infty TYPE RANGE OF infty.
 DATA:  gr_infty TYPE tr_infty.
+
+DATA pernr_anzhl TYPE i.

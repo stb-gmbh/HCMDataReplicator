@@ -51,7 +51,7 @@ START-OF-SELECTION.
   PERFORM write_data_to_tables.
 
 END-OF-SELECTION.
-  WRITE:/ 'Programmlauf beendet'.
+  WRITE:/ 'Programmlauf beendet. Gesamtanzahl Personalnummern:' , pernr_anzhl.
 *&---------------------------------------------------------------------*
 *&      Form  OVERWRITE_CUSTOMIZING_WITH_SEL
 *&---------------------------------------------------------------------*
