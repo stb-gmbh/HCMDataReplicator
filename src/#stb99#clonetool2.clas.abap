@@ -579,8 +579,8 @@ ENDMETHOD.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_ELSTAM'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_HIST'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_INFT'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_LIST_ST'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_LISTMTL_ST'.
+*    CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_LIST_ST'.
+*    CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_LISTMTL_ST'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_MELD_ST'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_PKV'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01E2_PKV_HIST'.

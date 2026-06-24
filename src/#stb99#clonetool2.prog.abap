@@ -15,6 +15,8 @@ INCLUDE /stb99/clonetool2_s.
 *----------------------------------------------------------------------*
 START-OF-SELECTION.
 *----------------------------------------------------------------------*
+  PERFORM check_pernr_selection.
+
   CREATE OBJECT clonetool2.
 
   PERFORM overwrite_customizing_with_sel.

@@ -262,3 +262,31 @@ FORM get_customizing .
 
   ENDLOOP.
 ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CHECK_PERNR_SELECTION
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM check_pernr_selection .
+ DATA lv_answer TYPE c LENGTH 1.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = 'Nachfrage'
+      text_question         = 'Sollen wirklich alle Personalnummern kopiert werden?'
+      text_button_1         = 'Ja'
+      icon_button_1         = 'ICON_OKAY'
+      text_button_2         = 'Nein'
+      icon_button_2         = 'ICON_CANCEL'
+      default_button        = '2'
+      display_cancel_button = abap_true
+    IMPORTING
+      answer                = lv_answer.
+
+  IF lv_answer <> '1'.
+    LEAVE TO SCREEN 0.
+  ENDIF.
+ENDFORM.
