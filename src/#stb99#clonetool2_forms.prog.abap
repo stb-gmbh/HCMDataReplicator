@@ -272,7 +272,7 @@ ENDFORM.
 *----------------------------------------------------------------------*
 FORM check_pernr_selection .
   DATA lv_answer TYPE c LENGTH 1.
-  IF s_infty[] IS INITIAL.
+  IF s_pernr[] IS INITIAL.
     CALL FUNCTION 'POPUP_TO_CONFIRM'
       EXPORTING
         titlebar              = 'Nachfrage'
