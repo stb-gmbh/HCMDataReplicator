@@ -343,7 +343,7 @@ ENDMETHOD.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dbme'.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dbna'.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dbso'.
-    CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dbs'.
+*    CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dbs'.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dsap'.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3dsme'.
     CALL METHOD me->read_table_with_pernr exporting tabname = 'pd3flag'.
@@ -702,7 +702,7 @@ ENDMETHOD.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01T_SVBEZ'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01T_VBEZ'.
 
-    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01T_AGS'.
+*    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01T_AGS'.
 
 
 
@@ -1800,7 +1800,7 @@ METHOD READ_TABLE_LSTA.
 
   DATA: l_table TYPE tabname.
 
-  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01T_A_%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
+  SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01T\_A\_%' AND as4local eq 'A' AND tabclass eq 'TRANSP'.
     CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
   ENDSELECT.
 
