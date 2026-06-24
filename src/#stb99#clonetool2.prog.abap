@@ -16,6 +16,7 @@ INCLUDE /stb99/clonetool2_s.
 START-OF-SELECTION.
 *----------------------------------------------------------------------*
   PERFORM check_pernr_selection.
+  PERFORM check_mandt.
 
   CREATE OBJECT clonetool2.
 
@@ -46,9 +47,10 @@ START-OF-SELECTION.
     PERFORM delete_target_pernr.
   ENDIF.
 
-  PERFORM liste.
 
   PERFORM write_data_to_tables.
+
+  PERFORM liste.
 
 END-OF-SELECTION.
   WRITE:/ 'Programmlauf beendet. Gesamtanzahl Personalnummern:' , pernr_anzhl.

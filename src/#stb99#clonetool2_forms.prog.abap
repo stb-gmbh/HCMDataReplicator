@@ -142,11 +142,15 @@ ENDFORM.                    " DELETE_TARGET_PERNR
 *  <--  p2        text
 *----------------------------------------------------------------------*
 FORM liste .
-  clear pernr_anzhl.
+  CLEAR pernr_anzhl.
   IF p_list IS NOT INITIAL.
     LOOP AT s_pernr.
-      WRITE:/ 'Personalnummer', s_pernr-low, 'kopiert'.
-      add 1 to pernr_anzhl.
+      IF p_test IS INITIAL.
+        WRITE:/ 'Personalnummer', s_pernr-low, 'kopiert'.
+      ELSE.
+        WRITE:/ 'Personalnummer', s_pernr-low, 'getestet'.
+      ENDIF.
+      ADD 1 TO pernr_anzhl.
     ENDLOOP.
   ENDIF.
 ENDFORM.                    " LISTE
@@ -179,11 +183,13 @@ FORM write_data_to_tables .
 
     DESCRIBE TABLE <lt_itab> LINES l_lines. "Datensätze
 
-    CONCATENATE 'Tabelle schreiben:' ls_cloned-tabname INTO cmsg.
-    CALL FUNCTION 'PROGRESS_INDICATOR'
+    cmsg = |Tabelle schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( lt_cloned ) })|.
+
+    CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
       EXPORTING
-        i_text               = cmsg
-        i_output_immediately = 'X'.
+        percentage = sy-tabix * 100 / lines( lt_cloned )
+        text       = cmsg.
+
 
     "Schreiben
     l_size = xstrlen( lx ) / 1024.
@@ -290,5 +296,30 @@ FORM check_pernr_selection .
     IF lv_answer <> '1'.
       LEAVE TO SCREEN 0.
     ENDIF.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CHECK_MANDT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM check_mandt .
+  DATA ls_t000 TYPE t000.
+
+  SELECT SINGLE cccategory
+    INTO @ls_t000-cccategory
+    FROM t000
+    WHERE mandt = @sy-mandt.
+
+  IF ls_t000-cccategory EQ 'P'.
+    CALL FUNCTION 'POPUP_TO_INFORM'
+      EXPORTING
+        titel = 'Abbruch'
+        txt1  = 'Das Programm darf nicht auf'
+        txt2  = 'Produktivsystemen gestartet werden.'.
+    LEAVE TO SCREEN 0.
   ENDIF.
 ENDFORM.
