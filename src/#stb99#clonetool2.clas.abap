@@ -849,7 +849,7 @@ METHOD read_tables_additional.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 't5d46'.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 't5d48'.
   CALL METHOD me->read_table_with_pernr EXPORTING tabname = 't5d2m'.
-  CALL METHOD me->read_table_with_pernr EXPORTING tabname = 't5d2_prot'.
+*  CALL METHOD me->read_table_with_pernr EXPORTING tabname = 't5d2_prot'.
 
 
 
