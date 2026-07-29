@@ -913,7 +913,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     "Personalnummernselektion
     CLEAR l_srtfd.
-    l_srtfd-option = 'EQ'.
+    l_srtfd-option = 'CP'.
     l_srtfd-sign = 'I'.
     LOOP AT at_pernr INTO DATA(ls_pernr).
       l_srtfd-low(8) = ls_pernr-low.
@@ -925,6 +925,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CLEAR l_relid.
     l_relid-option = 'EQ'.
     l_relid-sign = 'I'.
+    l_relid-low = 'CU'.
+    APPEND l_relid TO s_relid.
     l_relid-low = 'RD'.
     APPEND l_relid TO s_relid.
     l_relid-low = 'B2'.
