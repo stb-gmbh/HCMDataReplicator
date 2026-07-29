@@ -25,21 +25,48 @@ START-OF-SELECTION.
   lt_pernr[] = s_pernr[].
   gr_infty[] = s_infty[].
 
-  CALL FUNCTION '/STB99/CLONE_DATA'
-    DESTINATION p_dest
+
+  CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
     EXPORTING
-      p_custom        = p_custom
-      gr_infty        = gr_infty
-    IMPORTING
-      xstrtab         = lt_xstring
-      cloned_tables   = lt_cloned
-    CHANGING
-      s_pernr         = lt_pernr
-    EXCEPTIONS
-      no_data         = 1
-      nothingselected = 2
-*     OTHERS          = 3
-    .
+*     percentage = 10
+      text = |Die Daten werden gelesen...|.
+
+  TRY.
+
+      CALL FUNCTION '/STB99/CLONE_DATA'
+        DESTINATION p_dest
+        EXPORTING
+          p_custom              = p_custom
+          gr_infty              = gr_infty
+        IMPORTING
+          xstrtab               = lt_xstring
+          cloned_tables         = lt_cloned
+        CHANGING
+          s_pernr               = lt_pernr
+        EXCEPTIONS
+          no_data               = 1
+          nothingselected       = 2
+          communication_failure = 3 MESSAGE lv_msg
+          system_failure        = 4 MESSAGE lv_msg.
+
+      CASE sy-subrc.
+        WHEN 0.
+          "alles ok
+
+        WHEN 1.
+          MESSAGE 'Keine Daten gefunden.' TYPE 'E'.
+
+        WHEN 2.
+          MESSAGE 'Nichts selektiert.' TYPE 'E'.
+
+        WHEN 3 OR 4.
+          MESSAGE lv_msg TYPE 'E'.
+      ENDCASE.
+
+    CATCH cx_root INTO DATA(lx_root).
+      MESSAGE lx_root->get_text( ) TYPE 'E'.
+
+  ENDTRY.
 
   s_pernr[] = lt_pernr[].
 

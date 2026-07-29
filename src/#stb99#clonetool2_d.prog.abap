@@ -31,3 +31,4 @@ TYPES: tr_infty TYPE RANGE OF infty.
 DATA:  gr_infty TYPE tr_infty.
 
 DATA pernr_anzhl TYPE i.
+DATA lv_msg TYPE text256.
