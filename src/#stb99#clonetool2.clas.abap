@@ -995,6 +995,38 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ENDLOOP.
 
 
+    "Zentrale Personen
+    CREATE DATA ldo_data TYPE TABLE OF hrp1000.
+    ASSIGN ldo_data->* TO <lt_itab>.
+
+    SELECT * FROM hrp1000 INTO TABLE <lt_itab>
+      WHERE plvar EQ '01'
+        AND otype EQ 'P'
+        AND objid IN s_srtfd.
+
+    IF <lt_itab>[] IS NOT INITIAL.
+      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+      APPEND lx TO at_xstrtab.
+      ls_cloned-index = sy-tabix.
+      ls_cloned-tabname = 'HRP1000'.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
+
+    CREATE DATA ldo_data TYPE TABLE OF hrp1001.
+    ASSIGN ldo_data->* TO <lt_itab>.
+
+    SELECT * FROM hrp1001 INTO TABLE <lt_itab>
+      WHERE plvar EQ '01'
+        AND ( otype EQ 'P' AND objid IN s_srtfd )
+         or ( otype EQ 'CP' AND otjid IN s_srtfd ).
+
+    IF <lt_itab>[] IS NOT INITIAL.
+      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+      APPEND lx TO at_xstrtab.
+      ls_cloned-index = sy-tabix.
+      ls_cloned-tabname = 'HRP1001'.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
 
 
 
