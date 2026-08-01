@@ -242,8 +242,12 @@ FORM get_customizing .
    WHERE destination = @p_dest.
 
   IF sy-subrc <> 0.
-    RETURN.
-  ENDIF.
+  SELECT  *
+    FROM /stb99/ct2_cust UP TO 1 rows
+    INTO @ls_tmp ORDER BY destination ASCENDING.
+    exit.
+  ENDSELECT.
+ENDIF.
 
   lr_desc ?= cl_abap_typedescr=>describe_by_data( ls_tmp ).
 

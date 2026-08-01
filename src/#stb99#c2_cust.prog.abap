@@ -32,7 +32,6 @@ PARAMETERS p_del  TYPE xfeld AS CHECKBOX.
 SELECTION-SCREEN END OF SCREEN 0100.
 
 SELECTION-SCREEN BEGIN OF SCREEN 0200 AS SUBSCREEN.
-PARAMETERS p_pa03 TYPE /stb99/ct2_cust-pa03 AS CHECKBOX.
 PARAMETERS p_calc TYPE /stb99/ct2_cust-calc AS CHECKBOX.
 PARAMETERS p_pcp0 TYPE /stb99/ct2_cust-pcp0 AS CHECKBOX.
 PARAMETERS p_lohn TYPE /stb99/ct2_cust-lohn AS CHECKBOX.
@@ -109,7 +108,6 @@ FORM load_data.
     p_plvar = gs_custom-plvar.
     p_depth = gs_custom-depth.
     p_org   = gs_custom-org.
-    p_pa03  = gs_custom-pa03.
     p_calc  = gs_custom-calc.
     p_pcp0  = gs_custom-pcp0.
     p_deuv  = gs_custom-deuv.
@@ -162,7 +160,6 @@ FORM save_data.
   gs_custom-plvar        = p_plvar.
   gs_custom-depth        = p_depth.
   gs_custom-org          = p_org.
-  gs_custom-pa03         = p_pa03.
   gs_custom-calc         = p_calc.
   gs_custom-pcp0         = p_pcp0.
   gs_custom-deuv         = p_deuv.

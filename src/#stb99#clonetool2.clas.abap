@@ -1,53 +1,54 @@
-CLASS /stb99/clonetool2 DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
+class /STB99/CLONETOOL2 definition
+  public
+  final
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
 *"* public components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
-    DATA customizing TYPE /stb99/ct2_cust .
-    DATA tables_to_clone TYPE /stb99/tables_to_clone_t .
-    DATA tx_srtfd TYPE /stb99/range_srtfd_t .
-    DATA add_guid_tabs TYPE iqtrtab .
+  data CUSTOMIZING type /STB99/CT2_CUST .
+  data TABLES_TO_CLONE type /STB99/TABLES_TO_CLONE_T .
+  data TX_SRTFD type /STB99/RANGE_SRTFD_T .
+  data ADD_GUID_TABS type IQTRTAB .
 
-    METHODS add_guid_table
-      IMPORTING
-        !table TYPE tabname .
-    METHODS clone
-      IMPORTING
-        !gr_infty      TYPE /stb99/stb_infty_range_t
-      CHANGING
-        !s_pernr       TYPE /stb99/range_pernr_t
-        !cloned_tables TYPE /stb99/tables_t
-        !xstrtab       TYPE /stb99/xtab .
-    METHODS constructor .
-    METHODS get_tables_to_clone .
-    METHODS read_tables_additional .
-    METHODS read_tables_cluster .
-    METHODS read_tables_infotypes .
-    METHODS read_tables_meld_with_guid
-      IMPORTING
-        !tab_guid TYPE tabname
-        !add_tab  TYPE iqtrtab .
-    METHODS read_tables_numkr .
-    METHODS read_tables_orgman .
-    METHODS read_tables_pcp0 .
-    METHODS read_tables_time .
-    METHODS read_tables_trvl .
-    METHODS read_table_arbeitgeberkonto .
-    METHODS read_table_beitragsnachweise .
-    METHODS read_table_betriebsdatenpfl .
-    METHODS read_table_complete
-      IMPORTING
-        !tabname TYPE tabname .
-    METHODS read_table_eubp .
-    METHODS read_table_lsta .
-    METHODS read_table_rentenuebersicht .
-    METHODS read_table_with_pernr
-      IMPORTING
-        !tabname TYPE tabname .
+  methods ADD_GUID_TABLE
+    importing
+      !TABLE type TABNAME .
+  methods CLONE
+    importing
+      !GR_INFTY type /STB99/STB_INFTY_RANGE_T
+    changing
+      !S_PERNR type /STB99/RANGE_PERNR_T
+      !CLONED_TABLES type /STB99/TABLES_T
+      !XSTRTAB type /STB99/XTAB .
+  methods CONSTRUCTOR .
+  methods GET_TABLES_TO_CLONE .
+  methods READ_TABLES_ADDITIONAL .
+  methods READ_TABLES_CLUSTER .
+  methods READ_TABLES_INFOTYPES .
+  methods READ_TABLES_MELD_WITH_GUID
+    importing
+      !TAB_GUID type TABNAME
+      !ADD_TAB type IQTRTAB .
+  methods READ_TABLES_NUMKR .
+  methods READ_TABLES_ORGMAN .
+  methods READ_TABLES_PCP0 .
+  methods READ_TABLES_TIME .
+  methods READ_TABLES_TRVL .
+  methods READ_TABLE_ARBEITGEBERKONTO .
+  methods READ_TABLE_BEITRAGSNACHWEISE .
+  methods READ_TABLE_BETRIEBSDATENPFL .
+  methods READ_TABLE_COMPLETE
+    importing
+      !TABNAME type TABNAME .
+  methods READ_TABLE_EUBP .
+  methods READ_TABLE_SVZUSATZ .
+  methods READ_TABLE_LSTA .
+  methods READ_TABLE_RENTENUEBERSICHT .
+  methods READ_TABLE_WITH_PERNR
+    importing
+      !TABNAME type TABNAME .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -110,35 +111,27 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_tables_infotypes.
     CALL METHOD me->read_tables_additional.
     CALL METHOD me->read_tables_cluster.
-
-    "Zeitereignisse
-    IF customizing-time  IS NOT INITIAL. CALL METHOD me->read_tables_time.   ENDIF.     "TEVEN
-    IF customizing-org   IS NOT INITIAL. CALL METHOD me->read_tables_orgman. ENDIF.     "Orgmanagement
-    IF customizing-trvl  IS NOT INITIAL. CALL METHOD me->read_tables_trvl.   ENDIF.     "Reisekosten      "todo
-    IF customizing-numkr IS NOT INITIAL. CALL METHOD me->read_tables_numkr.  ENDIF.     "Nummernkreise
-    IF customizing-pcp0  IS NOT INITIAL. CALL METHOD me->read_tables_pcp0.   ENDIF.     "Buchungsbelege
-    IF customizing-a1    IS NOT INITIAL. CALL METHOD me->read_meld_a1.       ENDIF.     "Meldeverfahren A1
-    IF customizing-elena IS NOT INITIAL. CALL METHOD me->read_meld_elena.    ENDIF.     "Meldeverfahren ELENA
-    IF customizing-rbm   IS NOT INITIAL. CALL METHOD me->read_meld_rbm.      ENDIF.     "Meldeverfahren RBM
-    IF customizing-bv    IS NOT INITIAL. CALL METHOD me->read_meld_bv.       ENDIF.     "Meldeverfahren BV
-    IF customizing-ea    IS NOT INITIAL. CALL METHOD me->read_meld_ea.       ENDIF.     "Meldeverfahren EA
-    IF customizing-ee    IS NOT INITIAL. CALL METHOD me->read_meld_ee.       ENDIF.     "Meldeverfahren EE
-    IF customizing-deuv  IS NOT INITIAL. CALL METHOD me->read_meld_deuev.    ENDIF.     "Meldeverfahren deüv
-
-    "ab hier noch Parameter anlegen
+    CALL METHOD me->read_table_svzusatz.
+    CALL METHOD me->read_tables_time.
+    CALL METHOD me->read_tables_orgman.
+    CALL METHOD me->read_tables_trvl.
+    CALL METHOD me->read_tables_numkr.
+    CALL METHOD me->read_tables_pcp0.
+    CALL METHOD me->read_meld_a1.
+    CALL METHOD me->read_meld_elena.
+    CALL METHOD me->read_meld_rbm.
+    CALL METHOD me->read_meld_bv.
+    CALL METHOD me->read_meld_ea.
+    CALL METHOD me->read_meld_ee.
+    CALL METHOD me->read_meld_deuev.
     CALL METHOD me->read_meld_lstb. "Meldeverfahren LStB
     CALL METHOD me->read_meld_elstam. ""Meldeverfahren ElStAM
-
-
-    "keine Personalnummer oder nicht sinnvoll->komplett
     CALL METHOD me->read_table_beitragsnachweise. "Meldeverfahren Beitragsnachweise
     CALL METHOD me->read_table_lsta. "Meldeverfahren LStA
     CALL METHOD me->read_table_betriebsdatenpfl. "Meldeverfahren Betriebsdaten
     CALL METHOD me->read_table_arbeitgeberkonto. "Meldeverfahren Arbeitgeberkonto
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
-
-
 
     "Rückgabe an FuB
     xstrtab = at_xstrtab.
@@ -264,6 +257,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_a1.
+    CHECK me->customizing-a1 IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01A1_STAT'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01A1_EXT_DATA'.
 
@@ -309,6 +304,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_bv.
+    CHECK me->customizing-bv IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'p01bv_stat'.
 
     CLEAR add_guid_tabs[].
@@ -332,6 +329,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_deuev.
+    CHECK me->customizing-deuv IS NOT INITIAL.
+
     CONSTANTS: gui_tabname TYPE tabname VALUE 'P01ZS_STAT'.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBAN'.
@@ -355,6 +354,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_ea.
+    CHECK me->customizing-ea IS NOT INITIAL.
+
     CONSTANTS: gui_tabname TYPE tabname VALUE 'P01EA_STAT'.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
@@ -409,6 +410,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_ee.
+    CHECK me->customizing-ee IS NOT INITIAL.
+
     CONSTANTS: gui_tabname TYPE tabname VALUE 'p01EE_stat'.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
@@ -454,6 +457,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_elena.
+    CHECK me->customizing-elena IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01EL_STAT'.
 
     CLEAR add_guid_tabs[].
@@ -490,6 +495,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_elstam.
+
+    CHECK me->customizing-elsta IS NOT INITIAL.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01E2_ADM'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01E2_MELD'.
@@ -618,6 +625,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_lstb.
+    CHECK me->customizing-lstb IS NOT INITIAL.
 
     DATA:
       lr_data TYPE REF TO data,
@@ -711,6 +719,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_rbm.
+    CHECK me->customizing-rbm IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01RBM_STAT'.
 
     CLEAR add_guid_tabs[].
@@ -771,9 +781,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       EXPORTING
         tab_guid = gui_tabname
         add_tab  = add_guid_tabs.
-
-
-
 
   ENDMETHOD.
 
@@ -855,34 +862,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_tables_cluster.
 
-*PCL1 Leistlohn
-*Fehler Zeitwirtschaft B1
-*
-*PCL2 RD
-*PCL2 B2
-*
-*AE	Abrechnungs-Ergebnisse Pfändung
-*AF	Directory Pfändung
-*DP	Pfändungen (DE)
-*DQ	Directory Pfändung
-*
-*
-*
-*
-*PCL4 SA
-*PCL4 LA nur das mit Personalnummer
-
-*
-*PCL5
-*PY	Personalkostenplanung - Abrechnungsdaten
-*PC	Personalkostenplanung
-*PS	Personalkostenplanung Originalwerte
-*CB	Personalkostenplanung: Datenbasis aus Abrechnungsergebnissen
-*CC	Personalkostenplanung: Originalbeleg für CO-Buchung
-*CP	Personalkostenplanung: Daten des Planungslaufs
-
-
-
     DATA:
       lx        TYPE xstring,
       ldo_data  TYPE REF TO data,
@@ -910,7 +889,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     FIELD-SYMBOLS: <line>  TYPE any,
                    <field> TYPE any.
 
-
     "Personalnummernselektion
     CLEAR l_srtfd.
     l_srtfd-option = 'CP'.
@@ -923,14 +901,19 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     "Relid
     CLEAR l_relid.
+
     l_relid-option = 'EQ'.
     l_relid-sign = 'I'.
     l_relid-low = 'CU'.
-    APPEND l_relid TO s_relid.
-    l_relid-low = 'RD'.
-    APPEND l_relid TO s_relid.
-    l_relid-low = 'B2'.
-    APPEND l_relid TO s_relid.
+    IF me->customizing-calc IS NOT INITIAL.
+      APPEND l_relid TO s_relid.
+      l_relid-low = 'RD'.
+      APPEND l_relid TO s_relid.
+    ENDIF.
+    IF me->customizing-time IS NOT INITIAL.
+      l_relid-low = 'B2'.
+      APPEND l_relid TO s_relid.
+    ENDIF.
 
     CREATE DATA ldo_data TYPE TABLE OF pcl2.
     ASSIGN ldo_data->* TO <lt_itab>.
@@ -1018,7 +1001,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     SELECT * FROM hrp1001 INTO TABLE <lt_itab>
       WHERE plvar EQ '01'
         AND ( otype EQ 'P' AND objid IN s_srtfd )
-         or ( otype EQ 'CP' AND otjid IN s_srtfd ).
+         OR ( otype EQ 'CP' AND otjid IN s_srtfd ).
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -1060,7 +1043,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
     "Abrechnungskreise
-    IF me->customizing-pa03 IS NOT INITIAL
+    IF me->customizing-numkr IS NOT INITIAL
       AND s_abkrs IS NOT INITIAL.
       CREATE DATA ldo_data TYPE TABLE OF t569v.
       ASSIGN ldo_data->* TO <lt_itab>.
@@ -1313,6 +1296,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_tables_numkr.
+    CHECK me->customizing-numkr IS NOT INITIAL.
 
     DATA:
       lx                 TYPE xstring,
@@ -1345,6 +1329,9 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_tables_orgman.
+
+    CHECK me->customizing-org IS NOT INITIAL.
+
     DATA:
       lx                 TYPE xstring,
       ldo_data           TYPE REF TO data,
@@ -1524,6 +1511,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_tables_pcp0.
+    CHECK me->customizing-pcp0 IS NOT INITIAL.
 
     DATA:
       lx                 TYPE xstring,
@@ -1714,6 +1702,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_tables_time.
 
+    CHECK me->customizing-time IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'TEVEN'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'TEVEN_MORE'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTQUODED'.
@@ -1722,6 +1712,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_tables_trvl.
+    CHECK me->customizing-trvl IS NOT INITIAL.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_B'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_S'.
@@ -1750,7 +1741,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_arbeitgeberkonto.
-
+    CHECK me->customizing-agkto IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1767,7 +1758,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_beitragsnachweise.
-
+    CHECK me->customizing-beitr IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1784,7 +1775,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_betriebsdatenpfl.
-
+    CHECK me->customizing-betri IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1827,7 +1818,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_eubp.
-
+    CHECK me->customizing-eubp IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1844,7 +1835,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_lsta.
-
+    CHECK me->customizing-lsta IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1861,7 +1852,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_rentenuebersicht.
-
+    CHECK me->customizing-rent IS NOT INITIAL.
 
     DATA: l_table TYPE tabname.
 
@@ -1873,6 +1864,23 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
 
+
+  ENDMETHOD.
+
+
+  METHOD read_table_svzusatz.
+
+    CHECK me->customizing-sv IS NOT INITIAL.
+
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_B2A_GLBID'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_B2A_STATUS'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_B2ATRNS'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_DSID'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_IT700_A'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_IT700_B'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_KINDER'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_MLDAUFR'.
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_MLDTRNS'.
 
   ENDMETHOD.
 

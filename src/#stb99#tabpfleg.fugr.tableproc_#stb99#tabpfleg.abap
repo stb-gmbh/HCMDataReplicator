@@ -1,7 +1,7 @@
 *---------------------------------------------------------------------*
-*    program for:   TABLEPROC_/STB99/TABPFLEGE
+*    program for:   TABLEPROC_/STB99/TABPFLEG
 *---------------------------------------------------------------------*
-FUNCTION TABLEPROC_/STB99/TABPFLEGE    .
+FUNCTION TABLEPROC_/STB99/TABPFLEG     .
 
   PERFORM TABLEPROC.
 

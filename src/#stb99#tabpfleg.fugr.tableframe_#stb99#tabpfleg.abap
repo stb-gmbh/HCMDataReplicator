@@ -1,7 +1,7 @@
 *---------------------------------------------------------------------*
-*    program for:   TABLEFRAME_/STB99/TABPFLEGE
+*    program for:   TABLEFRAME_/STB99/TABPFLEG
 *---------------------------------------------------------------------*
-FUNCTION TABLEFRAME_/STB99/TABPFLEGE   .
+FUNCTION TABLEFRAME_/STB99/TABPFLEG    .
 
   PERFORM TABLEFRAME TABLES X_HEADER X_NAMTAB DBA_SELLIST DPL_SELLIST
                             EXCL_CUA_FUNCT

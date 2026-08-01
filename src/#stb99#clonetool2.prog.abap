@@ -90,29 +90,35 @@ END-OF-SELECTION.
 *  <--  p2        text
 *----------------------------------------------------------------------*
 FORM overwrite_customizing_with_sel .
-
-  IF p_numkr IS NOT INITIAL. p_custom-numkr       = p_numkr. ENDIF.
-  IF p_wegid IS NOT INITIAL. p_custom-wegid       = p_wegid. ENDIF.
-  IF p_plvar IS NOT INITIAL. p_custom-plvar       = p_plvar. ENDIF.
-  IF p_depth IS NOT INITIAL. p_custom-depth       = p_depth. ENDIF.
-  IF p_org   IS NOT INITIAL. p_custom-org         = p_org.   ENDIF.
-  IF p_pa03  IS NOT INITIAL. p_custom-pa03        = p_pa03.  ENDIF.
-  IF p_calc  IS NOT INITIAL. p_custom-calc        = p_calc.  ENDIF.
-  IF p_pcp0  IS NOT INITIAL. p_custom-pcp0        = p_pcp0.  ENDIF.
-  IF p_deuv  IS NOT INITIAL. p_custom-deuv        = p_deuv.  ENDIF.
-  IF p_lstb  IS NOT INITIAL. p_custom-lstb        = p_lstb.  ENDIF.
+  IF p_org IS NOT INITIAL. p_custom-org       = p_org. ENDIF.
+  IF p_calc IS NOT INITIAL. p_custom-calc       = p_calc. ENDIF.
+  IF p_pcp0 IS NOT INITIAL. p_custom-pcp0       = p_pcp0. ENDIF.
+  IF p_deuv IS NOT INITIAL. p_custom-deuv       = p_deuv. ENDIF.
+  IF p_lstb IS NOT INITIAL. p_custom-lstb       = p_lstb. ENDIF.
   IF p_elsta IS NOT INITIAL. p_custom-elsta       = p_elsta. ENDIF.
   IF p_elena IS NOT INITIAL. p_custom-elena       = p_elena. ENDIF.
-  IF p_bv    IS NOT INITIAL. p_custom-bv          = p_bv.    ENDIF.
-  IF p_ea    IS NOT INITIAL. p_custom-ea          = p_ea.    ENDIF.
-  IF p_ee    IS NOT INITIAL. p_custom-ee          = p_ee.    ENDIF.
-  IF p_rbm   IS NOT INITIAL. p_custom-rbm         = p_rbm.   ENDIF.
-  IF p_sv    IS NOT INITIAL. p_custom-sv          = p_sv.    ENDIF.
-  IF p_zs    IS NOT INITIAL. p_custom-zs          = p_zs.    ENDIF.
-  IF p_bav   IS NOT INITIAL. p_custom-bav         = p_bav.   ENDIF.
-  IF p_time  IS NOT INITIAL. p_custom-time        = p_time.  ENDIF.
-  IF p_lohn  IS NOT INITIAL. p_custom-lohn        = p_lohn.  ENDIF.
-  IF p_trvl  IS NOT INITIAL. p_custom-trvl        = p_trvl.  ENDIF.
+  IF p_bv IS NOT INITIAL. p_custom-bv       = p_bv. ENDIF.
+  IF p_ea IS NOT INITIAL. p_custom-ea       = p_ea. ENDIF.
+  IF p_ee IS NOT INITIAL. p_custom-ee       = p_ee. ENDIF.
+  IF p_rbm IS NOT INITIAL. p_custom-rbm       = p_rbm. ENDIF.
+  IF p_sv IS NOT INITIAL. p_custom-sv       = p_sv. ENDIF.
+  IF p_zs IS NOT INITIAL. p_custom-zs       = p_zs. ENDIF.
+  IF p_bav IS NOT INITIAL. p_custom-bav       = p_bav. ENDIF.
+  IF p_time IS NOT INITIAL. p_custom-time       = p_time. ENDIF.
+  IF p_lohn IS NOT INITIAL. p_custom-lohn       = p_lohn. ENDIF.
+  IF p_trvl IS NOT INITIAL. p_custom-trvl       = p_trvl. ENDIF.
+  IF p_a1 IS NOT INITIAL. p_custom-a1       = p_a1. ENDIF.
+  IF p_test IS NOT INITIAL. p_custom-test       = p_test. ENDIF.
+  IF p_det IS NOT INITIAL. p_custom-det       = p_det. ENDIF.
+  IF p_del IS NOT INITIAL. p_custom-del       = p_del. ENDIF.
+  IF p_eau IS NOT INITIAL. p_custom-eau       = p_eau. ENDIF.
+  IF p_krank IS NOT INITIAL. p_custom-krank       = p_krank. ENDIF.
+  IF p_rent IS NOT INITIAL. p_custom-rent       = p_rent. ENDIF.
+  IF p_lsta IS NOT INITIAL. p_custom-lsta       = p_lsta. ENDIF.
+  IF p_eubp IS NOT INITIAL. p_custom-eubp       = p_eubp. ENDIF.
+  IF p_betri IS NOT INITIAL. p_custom-betri       = p_betri. ENDIF.
+  IF p_beitr IS NOT INITIAL. p_custom-beitr       = p_beitr. ENDIF.
+  IF p_agkto IS NOT INITIAL. p_custom-agkto       = p_agkto. ENDIF.
 
   p_custom-destination = p_dest.
 
