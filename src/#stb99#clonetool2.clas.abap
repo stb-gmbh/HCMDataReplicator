@@ -8,7 +8,6 @@ public section.
 *"* public components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
   data CUSTOMIZING type /STB99/CT2_CUST .
-  data TABLES_TO_CLONE type /STB99/TABLES_TO_CLONE_T .
   data TX_SRTFD type /STB99/RANGE_SRTFD_T .
   data ADD_GUID_TABS type IQTRTAB .
 
@@ -23,7 +22,6 @@ public section.
       !CLONED_TABLES type /STB99/TABLES_T
       !XSTRTAB type /STB99/XTAB .
   methods CONSTRUCTOR .
-  methods GET_TABLES_TO_CLONE .
   methods READ_TABLES_ADDITIONAL .
   methods READ_TABLES_CLUSTER .
   methods READ_TABLES_INFOTYPES .
@@ -142,116 +140,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD constructor.
-
-    "Tabellen zum Klonen auswählen
-    CALL METHOD me->get_tables_to_clone.
-
-
-  ENDMETHOD.
-
-
-  METHOD get_tables_to_clone.
-    "Alle PA Tabellen mit Pernr
-    DATA: ls_tables_to_clone  LIKE LINE OF tables_to_clone .
-    REFRESH tables_to_clone.
-    SELECT * FROM dd03l INTO CORRESPONDING FIELDS OF ls_tables_to_clone
-      WHERE tabname BETWEEN 'PA0000' AND 'PA9999'
-        AND fieldname EQ 'PERNR'.
-
-      CHECK ls_tables_to_clone-tabname NE 'PA2001_UGR'
-        AND ls_tables_to_clone-tabname NE 'PA2002_UGR'
-        AND ls_tables_to_clone-tabname NE 'PA2006_UGR'
-        AND ls_tables_to_clone-tabname NE 'PA2007_UGR'.
-
-      ls_tables_to_clone-field = 'PERNR'.
-      APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDSELECT.
-
-    IF me->customizing-org IS NOT INITIAL.
-      SELECT * FROM dd03l INTO CORRESPONDING FIELDS OF ls_tables_to_clone
-        WHERE tabname BETWEEN 'HRP0000' AND 'HRP9999'
-          AND fieldname EQ 'OBJID'.
-        ls_tables_to_clone-field = 'OBJID'.
-        APPEND ls_tables_to_clone TO tables_to_clone.
-      ENDSELECT.
-    ENDIF.
-
-
-    IF me->customizing-sv IS NOT INITIAL.
-      ls_tables_to_clone-tabname = 'p01sv_mldaufr'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01sv_dsid'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-bav IS NOT INITIAL.
-      "BAV
-      ls_tables_to_clone-tabname = 'p01cabr'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cad'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cbe'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cbf'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cbt'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01ccv'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cee'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cef'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cet'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cgp'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cix'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cka'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01crp'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01csl'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cso'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cst'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cua'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01cvu'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01pf_rt_ep'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01pf_tilg'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_auft'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_be'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_bf'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_cbe'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_cbf'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_cka'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_clst'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_ka'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_lstv'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01va_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-zs IS NOT INITIAL.
-      "Zahlstellenmeldungen
-      ls_tables_to_clone-tabname = 'p01zs_azvu'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01zs_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-rbm IS NOT INITIAL.
-      "Rentenbezugsmitteilung
-      ls_tables_to_clone-tabname = 'p01rbm_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01rbm_stat_r'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01rbm_mz01_kolb'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01rbm_mz01_korg'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01rbm_mz01_kosv'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-zs IS NOT INITIAL.
-      "Entgeltersatzlesitungen
-      ls_tables_to_clone-tabname = 'p01ee_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-ea IS NOT INITIAL.
-      "Erstattungsverfahren
-      ls_tables_to_clone-tabname = 'p01ea_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-    IF me->customizing-bv IS NOT INITIAL.
-      "Zahlstellenmeldungen
-      ls_tables_to_clone-tabname = 'p01bv_stat'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-      ls_tables_to_clone-tabname = 'p01bv_kean'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
-
-
-    IF me->customizing-elena IS NOT INITIAL.
-      "ELENA-Meldeverfahren
-      ls_tables_to_clone-tabname = 'p01el_prot'.ls_tables_to_clone-field = 'PERNR'.APPEND ls_tables_to_clone TO tables_to_clone.
-    ENDIF.
 
   ENDMETHOD.
 
@@ -1342,7 +1230,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     FIELD-SYMBOLS: <lt_itab> TYPE table,
                    <pernr>   TYPE any.
 
-
     DATA: lt_result_tab TYPE TABLE OF swhactor,
           ls_result_tab TYPE swhactor.
 
@@ -1356,112 +1243,77 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           s_objid TYPE /stb99/range_objid_t,
           l_objid TYPE /stb99/range_objid.
 
-
 * Vorbereitungen Org. Management
     DATA: lt_t777i TYPE TABLE OF t777i,
           ls_t777i TYPE t777i.
 
-    IF me->customizing-wegid IS NOT   INITIAL.
-      SELECT otype FROM t777i INTO TABLE lt_t777i
-        WHERE infty EQ '1000'.
+    DATA: pernr_table TYPE TABLE OF /stb99/pernr_table.
 
-      l_otype-sign ='I'.
-      l_otype-option = 'EQ'.
+    CHECK me->customizing-org IS NOT INITIAL.
 
-      LOOP AT lt_t777i INTO ls_t777i.
-        l_otype-low = ls_t777i-otype.
-        APPEND l_otype TO s_otype.
-      ENDLOOP.
+    IF me->customizing-wegid IS NOT INITIAL.
+
+      SELECT DISTINCT pernr INTO CORRESPONDING FIELDS OF ls_pernr
+        FROM pa0003
+        WHERE pernr IN at_pernr.
+      ENDSELECT.
+
+      LOOP AT pernr_table INTO ls_pernr.
+        CALL FUNCTION 'RH_STRUC_GET'
+          EXPORTING
+            act_otype      = 'P'
+            act_objid      = ls_pernr-pernr
+            act_wegid      = me->customizing-wegid
+*           ACT_INT_FLAG   =
+            act_plvar      = me->customizing-plvar
+            act_begda      = '19000101'
+            act_endda      = '99991231'
+            act_tdepth     = me->customizing-depth
+*           ACT_TFLAG      = 'X'
+*           ACT_VFLAG      = 'X'
+*           AUTHORITY_CHECK        = 'X'
+*           TEXT_BUFFER_FILL       =
+*           BUFFER_MODE    =
+*       IMPORTING
+*           ACT_PLVAR      =
+          TABLES
+            result_tab     = lt_result_tab
+*           result_objec   =
+            result_struc   = lt_result_struc
+          EXCEPTIONS
+            no_plvar_found = 1
+            no_entry_found = 2
+            OTHERS         = 3.
+        IF sy-subrc EQ 0.
+          LOOP AT lt_result_tab INTO ls_result_tab WHERE otype IN s_otype.
+            l_objid-low = ls_result_tab-objid.
+            l_objid-sign = 'I'.
+            l_objid-option = 'EQ'.
+            COLLECT l_objid INTO s_objid.
+
+            l_otype-low = ls_result_tab-otype.
+            l_otype-sign = 'I'.
+            l_otype-option = 'EQ'.
+            COLLECT l_otype INTO s_otype.
+          ENDLOOP.
+        ENDIF.
+      ENDLOOP. "pernr
+    ELSE. "ohne wegid alles kopieren
+      REFRESH s_otype[].
+      REFRESH s_objid[].
     ENDIF.
 
+    SELECT * FROM dd03l INTO CORRESPONDING FIELDS OF ls_tables_to_clone
+          WHERE tabname BETWEEN 'HRP1000' AND 'HRP9999'
+            AND fieldname EQ 'OBJID'
+            ORDER BY tabname ASCENDING.
 
-
-
-    LOOP AT me->tables_to_clone INTO ls_tables_to_clone WHERE field EQ 'OBJID'.
       CREATE DATA ldo_data TYPE TABLE OF (ls_tables_to_clone-tabname).
       ASSIGN ldo_data->* TO <lt_itab>.
 
       SELECT * FROM (ls_tables_to_clone-tabname) INTO TABLE <lt_itab>
-        WHERE otype EQ 'P'
-          AND objid IN at_pernr.
-
-      IF ls_tables_to_clone-tabname EQ 'HRP1001'.
-        SELECT * FROM (ls_tables_to_clone-tabname) APPENDING TABLE <lt_itab>
-          WHERE sclas EQ 'P'
-            AND sobid IN at_pernr.
-
-        DATA: pernr_table TYPE TABLE OF /stb99/pernr_table.
-
-        SELECT DISTINCT pernr INTO CORRESPONDING FIELDS OF ls_pernr
-          FROM pa0003
-          WHERE pernr IN at_pernr.
-        ENDSELECT.
-
-        LOOP AT pernr_table INTO ls_pernr.
-          CALL FUNCTION 'RH_STRUC_GET'
-            EXPORTING
-              act_otype      = 'P'
-              act_objid      = ls_pernr-pernr
-              act_wegid      = me->customizing-wegid
-*             ACT_INT_FLAG   =
-              act_plvar      = me->customizing-plvar
-              act_begda      = '19000101'
-              act_endda      = '99991231'
-              act_tdepth     = me->customizing-depth
-*             ACT_TFLAG      = 'X'
-*             ACT_VFLAG      = 'X'
-*             AUTHORITY_CHECK        = 'X'
-*             TEXT_BUFFER_FILL       =
-*             BUFFER_MODE    =
-*       IMPORTING
-*             ACT_PLVAR      =
-            TABLES
-              result_tab     = lt_result_tab
-*             result_objec   =
-              result_struc   = lt_result_struc
-            EXCEPTIONS
-              no_plvar_found = 1
-              no_entry_found = 2
-              OTHERS         = 3.
-          IF sy-subrc EQ 0.
-            LOOP AT lt_result_tab INTO ls_result_tab WHERE otype IN s_otype.
-              l_objid-low = ls_result_tab-objid.
-              l_objid-sign = 'I'.
-              l_objid-option = 'EQ'.
-              COLLECT l_objid INTO s_objid.
-            ENDLOOP.
-
-            lt_result_struc[] = it_result_struc[].
-
-            LOOP AT it_result_struc INTO is_result_struc.
-              IF is_result_struc-pup GT 0.
-
-                LOOP AT lt_result_struc INTO ls_result_struc
-                  WHERE level EQ is_result_struc-pup.
-                  EXIT.
-                ENDLOOP.
-
-                SELECT * FROM hrp1001 APPENDING TABLE <lt_itab>
-                  WHERE otype EQ ls_result_struc-otype
-                    AND objid EQ ls_result_struc-objid
-                    AND sclas EQ is_result_struc-otype
-                    AND sobid EQ is_result_struc-objid
-                    AND begda EQ is_result_struc-vbegda
-                    AND endda EQ is_result_struc-vendda.
-
-                SELECT * FROM hrp1001 APPENDING TABLE <lt_itab>
-                  WHERE otype EQ is_result_struc-otype
-                    AND objid EQ is_result_struc-objid
-                    AND sclas EQ ls_result_struc-otype
-                    AND sobid EQ ls_result_struc-objid
-                    AND begda EQ is_result_struc-vbegda
-                    AND endda EQ is_result_struc-vendda.
-
-              ENDIF.
-            ENDLOOP.
-          ENDIF.
-        ENDLOOP.
-      ENDIF.
+        WHERE otype IN s_otype
+          AND objid IN s_objid.
 
 
       CHECK <lt_itab>[] IS NOT INITIAL.
@@ -1470,39 +1322,122 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ls_cloned-index = sy-tabix.
       ls_cloned-tabname = ls_tables_to_clone-tabname.
       APPEND ls_cloned TO at_cloned_tables.
-    ENDLOOP.
 
-    "weitere Objekte
-    CREATE DATA ldo_data TYPE TABLE OF hrp1000.
-    ASSIGN ldo_data->* TO <lt_itab>.
+    ENDSELECT.
 
-    SELECT * FROM hrp1000 INTO TABLE <lt_itab>
-      WHERE plvar EQ me->customizing-plvar
-        AND objid IN s_objid.
 
-    DELETE ADJACENT DUPLICATES FROM <lt_itab>.
 
-    IF <lt_itab>[] IS NOT INITIAL.
-      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
-      APPEND lx TO at_xstrtab.
-      ls_cloned-index = sy-tabix.
-      ls_cloned-tabname = 'HRP1000'.
-      APPEND ls_cloned TO at_cloned_tables.
-    ENDIF.
-    CREATE DATA ldo_data TYPE TABLE OF plogi.
-    ASSIGN ldo_data->* TO <lt_itab>.
 
-    SELECT * FROM plogi INTO TABLE <lt_itab>
-      WHERE plvar EQ me->customizing-plvar
-        AND objid IN s_objid.
 
-    IF <lt_itab>[] IS NOT INITIAL.
-      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
-      APPEND lx TO at_xstrtab.
-      ls_cloned-index = sy-tabix.
-      ls_cloned-tabname = 'HRP1000'.
-      APPEND ls_cloned TO at_cloned_tables.
-    ENDIF.
+*    IF ls_tables_to_clone-tabname EQ 'HRP1001'.
+*      SELECT * FROM (ls_tables_to_clone-tabname) APPENDING TABLE <lt_itab>
+*        WHERE sclas EQ 'P'
+*          AND sobid IN at_pernr.
+
+*
+*      SELECT DISTINCT pernr INTO CORRESPONDING FIELDS OF ls_pernr
+*        FROM pa0003
+*        WHERE pernr IN at_pernr.
+*      ENDSELECT.
+*
+*      LOOP AT pernr_table INTO ls_pernr.
+*        CALL FUNCTION 'RH_STRUC_GET'
+*          EXPORTING
+*            act_otype      = 'P'
+*            act_objid      = ls_pernr-pernr
+*            act_wegid      = me->customizing-wegid
+**           ACT_INT_FLAG   =
+*            act_plvar      = me->customizing-plvar
+*            act_begda      = '19000101'
+*            act_endda      = '99991231'
+*            act_tdepth     = me->customizing-depth
+**           ACT_TFLAG      = 'X'
+**           ACT_VFLAG      = 'X'
+**           AUTHORITY_CHECK        = 'X'
+**           TEXT_BUFFER_FILL       =
+**           BUFFER_MODE    =
+**       IMPORTING
+**           ACT_PLVAR      =
+*          TABLES
+*            result_tab     = lt_result_tab
+**           result_objec   =
+*            result_struc   = lt_result_struc
+*          EXCEPTIONS
+*            no_plvar_found = 1
+*            no_entry_found = 2
+*            OTHERS         = 3.
+*        IF sy-subrc EQ 0.
+*          LOOP AT lt_result_tab INTO ls_result_tab WHERE otype IN s_otype.
+*            l_objid-low = ls_result_tab-objid.
+*            l_objid-sign = 'I'.
+*            l_objid-option = 'EQ'.
+*            COLLECT l_objid INTO s_objid.
+*          ENDLOOP.
+
+*          lt_result_struc[] = it_result_struc[].
+*
+*          LOOP AT it_result_struc INTO is_result_struc.
+*            IF is_result_struc-pup GT 0.
+*
+*              LOOP AT lt_result_struc INTO ls_result_struc
+*                WHERE level EQ is_result_struc-pup.
+*                EXIT.
+*              ENDLOOP.
+*
+*              SELECT * FROM hrp1001 APPENDING TABLE <lt_itab>
+*                WHERE otype EQ ls_result_struc-otype
+*                  AND objid EQ ls_result_struc-objid
+*                  AND sclas EQ is_result_struc-otype
+*                  AND sobid EQ is_result_struc-objid
+*                  AND begda EQ is_result_struc-vbegda
+*                  AND endda EQ is_result_struc-vendda.
+*
+*              SELECT * FROM hrp1001 APPENDING TABLE <lt_itab>
+*                WHERE otype EQ is_result_struc-otype
+*                  AND objid EQ is_result_struc-objid
+*                  AND sclas EQ ls_result_struc-otype
+*                  AND sobid EQ ls_result_struc-objid
+*                  AND begda EQ is_result_struc-vbegda
+*                  AND endda EQ is_result_struc-vendda.
+*
+*            ENDIF.
+*          ENDLOOP.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
+
+
+*      "weitere Objekte
+*      CREATE DATA ldo_data TYPE TABLE OF hrp1000.
+*      ASSIGN ldo_data->* TO <lt_itab>.
+*
+*      SELECT * FROM hrp1000 INTO TABLE <lt_itab>
+*        WHERE plvar EQ me->customizing-plvar
+*          AND objid IN s_objid.
+*
+*      DELETE ADJACENT DUPLICATES FROM <lt_itab>.
+*
+*      IF <lt_itab>[] IS NOT INITIAL.
+*        EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+*        APPEND lx TO at_xstrtab.
+*        ls_cloned-index = sy-tabix.
+*        ls_cloned-tabname = 'HRP1000'.
+*        APPEND ls_cloned TO at_cloned_tables.
+*      ENDIF.
+*      CREATE DATA ldo_data TYPE TABLE OF plogi.
+*      ASSIGN ldo_data->* TO <lt_itab>.
+*
+*      SELECT * FROM plogi INTO TABLE <lt_itab>
+*        WHERE plvar EQ me->customizing-plvar
+*          AND objid IN s_objid.
+*
+*      IF <lt_itab>[] IS NOT INITIAL.
+*        EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+*        APPEND lx TO at_xstrtab.
+*        ls_cloned-index = sy-tabix.
+*        ls_cloned-tabname = 'HRP1000'.
+*        APPEND ls_cloned TO at_cloned_tables.
+*      ENDIF.
 
 
 
