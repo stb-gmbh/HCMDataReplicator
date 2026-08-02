@@ -7,6 +7,7 @@ TABLES: t777d,pernr.
 
 DATA: ldo_data   TYPE REF TO data.
 FIELD-SYMBOLS: <lt_itab>    TYPE table.
+
 DATA:
   lx  TYPE xstring,
   lt  TYPE TABLE OF t001,

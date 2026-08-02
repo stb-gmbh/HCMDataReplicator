@@ -164,6 +164,7 @@ ENDFORM.                    " LISTE
 *  <--  p2        text
 *----------------------------------------------------------------------*
 FORM write_data_to_tables .
+  FIELD-SYMBOLS: <ls_line>, <l_relid> TYPE any.
   "Schreiben der übermittelten Daten aus dem Produktivsystem
   LOOP AT lt_cloned INTO ls_cloned. "Tabellennamen
 
@@ -182,6 +183,11 @@ FORM write_data_to_tables .
     ENDTRY.
 
     DESCRIBE TABLE <lt_itab> LINES l_lines. "Datensätze
+    if ls_cloned-tabname BETWEEN 'PCL1' AND 'PCL5'.
+      READ TABLE <lt_itab> ASSIGNING <ls_line> INDEX 1.
+      ASSIGN COMPONENT 'RELID' OF STRUCTURE <ls_line> to <l_relid>.
+      CONCATENATE ls_cloned-tabname '/' <l_relid> INTO ls_cloned-tabname SEPARATED BY space.
+    endif.
 
     cmsg = |Tabelle schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( lt_cloned ) })|.
 
