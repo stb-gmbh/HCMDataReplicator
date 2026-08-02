@@ -165,6 +165,8 @@ ENDFORM.                    " LISTE
 *----------------------------------------------------------------------*
 FORM write_data_to_tables .
   FIELD-SYMBOLS: <ls_line>, <l_relid> TYPE any.
+  DATA: add_info TYPE string.
+
   "Schreiben der übermittelten Daten aus dem Produktivsystem
   LOOP AT lt_cloned INTO ls_cloned. "Tabellennamen
 
@@ -183,10 +185,11 @@ FORM write_data_to_tables .
     ENDTRY.
 
     DESCRIBE TABLE <lt_itab> LINES l_lines. "Datensätze
+    CLEAR add_info.
     if ls_cloned-tabname BETWEEN 'PCL1' AND 'PCL5'.
       READ TABLE <lt_itab> ASSIGNING <ls_line> INDEX 1.
       ASSIGN COMPONENT 'RELID' OF STRUCTURE <ls_line> to <l_relid>.
-      CONCATENATE ls_cloned-tabname '/' <l_relid> INTO ls_cloned-tabname SEPARATED BY space.
+      add_info = <l_relid>.
     endif.
 
     cmsg = |Tabelle schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( lt_cloned ) })|.
@@ -204,10 +207,10 @@ FORM write_data_to_tables .
         IF p_test IS INITIAL.
           INSERT (ls_cloned-tabname) FROM TABLE <lt_itab>.
           IF sy-subrc EQ 0.
-            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze'.ENDIF.
+            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, add_info, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze'.ENDIF.
           ENDIF.
         ELSE.
-          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
+          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, add_info, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
         ENDIF.
 
       CATCH cx_sy_open_sql_db.
@@ -215,10 +218,10 @@ FORM write_data_to_tables .
           DELETE (ls_cloned-tabname) FROM TABLE <lt_itab>.
           INSERT (ls_cloned-tabname) FROM TABLE <lt_itab>.
           IF sy-subrc EQ 0.
-            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze. Sätze wurden vorher gelöscht'.ENDIF.
+            IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, add_info, l_lines, 'Einträge geklont. Länge:', l_size, 'kB', 'geschrieben: ', sy-dbcnt, 'Sätze. Sätze wurden vorher gelöscht'.ENDIF.
           ENDIF.
         ELSE.
-          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
+          IF p_det IS NOT INITIAL. WRITE:/ 'Tabelle:' , ls_cloned-tabname, add_info, l_lines, 'Einträge getestet. Länge:', l_size, 'kB'.ENDIF.
         ENDIF.
     ENDTRY.
 
