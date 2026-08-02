@@ -1389,12 +1389,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     IF me->customizing-wegid IS NOT INITIAL.
 
-      SELECT DISTINCT pernr INTO CORRESPONDING FIELDS OF ls_pernr
-        FROM pa0003
-        WHERE pernr IN at_pernr.
-      ENDSELECT.
-
-      LOOP AT pernr_table INTO ls_pernr.
+      LOOP AT at_pernr INTO ls_pernr.
         CALL FUNCTION 'RH_STRUC_GET'
           EXPORTING
             act_otype      = 'P'
