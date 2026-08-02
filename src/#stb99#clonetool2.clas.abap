@@ -23,7 +23,9 @@ public section.
       !XSTRTAB type /STB99/XTAB .
   methods CONSTRUCTOR .
   methods READ_TABLES_ADDITIONAL .
-  methods READ_TABLES_CLUSTER .
+  methods READ_TABLES_CLUSTER
+    exceptions
+      CLUSTER_NOT_IMPLEMENTED .
   methods READ_TABLES_INFOTYPES .
   methods READ_TABLES_MELD_WITH_GUID
     importing
@@ -131,6 +133,24 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
 
+
+"dabpv
+"versicheurngsnummer vav
+"KEG
+"beitragsnachweis
+"ESS ABW PTCOR
+"ptquoded
+
+
+
+"PCL1:
+*TA	RP-Reisekosten allg. Daten
+*TC	RP-Reisekosten Kreditkartendaten
+*TE	RP-Reisekosten international
+*TS	RP-Reisekosten Shared
+*TV	RP-Reisekosten Stammdaten VCF4
+
+
     "Rückgabe an FuB
     xstrtab = at_xstrtab.
     cloned_tables = at_cloned_tables.
@@ -140,6 +160,132 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD constructor.
+
+
+    TYPES:
+      tt_clst TYPE STANDARD TABLE OF /stb99/clst
+        WITH EMPTY KEY.
+
+    DATA(lt_clst) = VALUE tt_clst(
+
+*   ---------------------------------------------------------------
+*   PCL1 - Zeitwirtschaft, BDE und persönliche Kalenderdaten
+*   ---------------------------------------------------------------
+
+      ( tabname = 'PCL1'
+        relid   = 'B1' ) " BDE-Daten
+
+      ( tabname = 'PCL1'
+        relid   = 'B2' ) " BDE-Auswertung / PDC-Evaluation
+
+*      ( tabname = 'PCL1'
+*        relid   = 'B3' ) " Puffer für BDE-Sätze
+*
+*      ( tabname = 'PCL1'
+*        relid   = 'B4' ) " Deponie für BDE-Sätze
+
+*      ( tabname = 'PCL1'
+*        relid   = 'G1' ) " Gruppen-Leistungslohn
+*
+*      ( tabname = 'PCL1'
+*        relid   = 'G3' ) " BDE-Daten für Gruppen
+
+      ( tabname = 'PCL1'
+        relid   = 'PC' ) " Persönlicher Kalender
+
+
+*   ---------------------------------------------------------------
+*   PCL2 - Personalabrechnung Deutschland
+*   ---------------------------------------------------------------
+
+      ( tabname = 'PCL2'
+        relid   = 'CU' ) " Verzeichnis der Abrechnungsergebnisse
+
+*      ( tabname = 'PCL2'
+*        relid   = 'CE' ) " Abrechnungsergebnis: Personenergebnis CE
+
+      ( tabname = 'PCL2'
+        relid   = 'RD' ) " Abrechnungsergebnis Deutschland
+
+*      ( tabname = 'PCL2'
+*        relid   = 'RU' ) " Abrechnungsergebnis international
+
+*      ( tabname = 'PCL2'
+*        relid   = 'RX' ) " Internationales Abrechnungsergebnis
+
+*      ( tabname = 'PCL2'
+*        relid   = 'BT' ) " Banktransferdaten
+
+*      ( tabname = 'PCL2'
+*        relid   = 'CD' ) " Cluster-Verzeichnis
+
+*      ( tabname = 'PCL2'
+*        relid   = 'DR' ) " Pfändungen Deutschland, Schattencluster
+
+*      ( tabname = 'PCL2'
+*        relid   = 'DS' ) " Directory Pfändung Deutschland, Schattencluster
+
+*      ( tabname = 'PCL2'
+*        relid   = 'DT' ) " Pfändungen Deutschland, Schattencluster-Sicherung
+
+*      ( tabname = 'PCL2'
+*        relid   = 'DV' ) " Directory Pfändung, Schattencluster-Sicherung
+
+
+**   ---------------------------------------------------------------
+**   PCL3 - Reisekosten
+**   ---------------------------------------------------------------
+*
+*      ( tabname = 'PCL3'
+*        relid   = 'LA' ) " Reisekostendaten
+*
+*      ( tabname = 'PCL3'
+*        relid   = 'LB' ) " Reisekostenbelege
+
+
+**   ---------------------------------------------------------------
+**   PCL4 - Zeitwirtschaft
+**   ---------------------------------------------------------------
+*
+*      ( tabname = 'PCL4'
+*        relid   = 'TX' ) " Zeitwirtschaftsdaten
+*
+
+**   ---------------------------------------------------------------
+**   PCL5 - Bewerbermanagement
+**   ---------------------------------------------------------------
+*
+*      ( tabname = 'PCL5'
+*        relid   = 'PS' ) " Bewerberdaten
+*
+    ).
+
+* Alte Definitionen entfernen
+    DELETE FROM /stb99/clst
+    WHERE tabname = 'PCL1'
+       OR tabname = 'PCL2'
+       OR tabname = 'PCL3'
+       OR tabname = 'PCL4'
+       OR tabname = 'PCL5'.
+
+    IF sy-subrc <> 0 AND sy-subrc <> 4.
+      ROLLBACK WORK.
+
+      MESSAGE e398(00)
+        WITH 'Fehler beim Löschen der Tabelle /STB99/CLST'.
+    ENDIF.
+
+* Neue Definitionen einfügen
+    INSERT /stb99/clst FROM TABLE @lt_clst.
+
+    IF sy-subrc <> 0.
+      ROLLBACK WORK.
+
+      MESSAGE e398(00)
+        WITH 'Fehler beim Befüllen der Tabelle /STB99/CLST'.
+    ENDIF.
+
+    COMMIT WORK AND WAIT.
 
   ENDMETHOD.
 
@@ -764,7 +910,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     DATA: s_relid TYPE /stb99/copy_relid_range,
           l_relid TYPE /stb99/copy_relid_range_line.
 
-
     DATA: rgdir    TYPE TABLE OF pc261,
           ls_rgdir TYPE pc261.
 
@@ -774,97 +919,88 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     DATA: s_abkrs TYPE /stb99/range_abkrs_t,
           l_abkrs TYPE /stb99/range_abkrs.
+
     FIELD-SYMBOLS: <line>  TYPE any,
                    <field> TYPE any.
 
-    "Personalnummernselektion
-    CLEAR l_srtfd.
-    l_srtfd-option = 'CP'.
-    l_srtfd-sign = 'I'.
-    LOOP AT at_pernr INTO DATA(ls_pernr).
-      l_srtfd-low(8) = ls_pernr-low.
-      l_srtfd-low+8(1) = '*'.
-      APPEND l_srtfd TO s_srtfd.
-    ENDLOOP.
+    DATA: ls_pernr LIKE LINE OF at_pernr.
 
-    "Relid
-    CLEAR l_relid.
 
-    l_relid-option = 'EQ'.
-    l_relid-sign = 'I'.
-    l_relid-low = 'CU'.
-    IF me->customizing-calc IS NOT INITIAL.
-      APPEND l_relid TO s_relid.
-      l_relid-low = 'RD'.
-      APPEND l_relid TO s_relid.
-    ENDIF.
-    IF me->customizing-time IS NOT INITIAL.
-      l_relid-low = 'B2'.
-      APPEND l_relid TO s_relid.
-    ENDIF.
+    SELECT * FROM /stb99/clst INTO @DATA(ls_clst).
+      CASE ls_clst-tabname.
+        WHEN 'PCL1'.
+          CASE ls_clst-relid.
+            WHEN 'B1' OR 'B2' OR 'PC'.
+              "Personalnummer*
+              CLEAR l_srtfd.
+              l_srtfd-option = 'CP'.
+              l_srtfd-sign = 'I'.
+              LOOP AT at_pernr INTO ls_pernr.
+                l_srtfd-low(8) = ls_pernr-low.
+                l_srtfd-low+8(1) = '*'.
+                APPEND l_srtfd TO s_srtfd.
+              ENDLOOP.
+            WHEN OTHERS.
+              RAISE cluster_not_implemented.
+          ENDCASE.
+        WHEN 'PCL2'.
+          CASE ls_clst-relid.
+            WHEN 'CU' OR 'RD'.
+              "Personalnummer*
+              CLEAR l_srtfd.
+              l_srtfd-option = 'CP'.
+              l_srtfd-sign = 'I'.
+              LOOP AT at_pernr INTO ls_pernr.
+                l_srtfd-low(8) = ls_pernr-low.
+                l_srtfd-low+8(1) = '*'.
+                APPEND l_srtfd TO s_srtfd.
+              ENDLOOP.
+            WHEN OTHERS.
+              RAISE cluster_not_implemented.
 
-    CREATE DATA ldo_data TYPE TABLE OF pcl2.
-    ASSIGN ldo_data->* TO <lt_itab>.
-* Daten selektieren
-    SELECT * FROM pcl2 INTO TABLE <lt_itab>
-      WHERE relid IN s_relid
-        AND srtfd IN s_srtfd.
+          ENDCASE.
+      ENDCASE.
 
-    IF <lt_itab>[] IS NOT INITIAL.
-      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
-      APPEND lx TO at_xstrtab.
-      ls_cloned-index = sy-tabix.
-      ls_cloned-tabname = 'PCL2'.
-      APPEND ls_cloned TO at_cloned_tables.
-    ENDIF.
-
-    IF me->customizing-time IS NOT INITIAL.
-      "Relid
-      REFRESH s_relid.
-      CLEAR l_relid.
-      l_relid-option = 'EQ'.
-      l_relid-sign = 'I'.
-      l_relid-low = 'B1'.
-      APPEND l_relid TO s_relid.
-
-      CREATE DATA ldo_data TYPE TABLE OF pcl1.
+      "Tabelle mit tabname und relid und srtfd lesen
+      CREATE DATA ldo_data TYPE TABLE OF (ls_clst-tabname).
       ASSIGN ldo_data->* TO <lt_itab>.
-* Daten selektieren
-      SELECT * FROM pcl1 INTO TABLE <lt_itab>
-        WHERE relid IN s_relid
+      " Daten selektieren
+      SELECT * FROM (ls_clst-tabname) INTO TABLE <lt_itab>
+        WHERE relid EQ ls_clst-relid
           AND srtfd IN s_srtfd.
 
       IF <lt_itab>[] IS NOT INITIAL.
         EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
         APPEND lx TO at_xstrtab.
         ls_cloned-index = sy-tabix.
-        ls_cloned-tabname = 'PCL1'.
+        ls_cloned-tabname = ls_clst-tabname.
         APPEND ls_cloned TO at_cloned_tables.
       ENDIF.
-    ENDIF.
 
+*          IF me->customizing-pa03 IS NOT INITIAL AND ls_clst-relid EQ 'CU'.
+      "Abrechnungskreise für PA03 sammeln
+      CLEAR l_abkrs.
+      REFRESH s_abkrs.
+      l_abkrs-sign = 'I'.
+      l_abkrs-option = 'EQ'.
+      LOOP AT <lt_itab> ASSIGNING <line>.
+        ASSIGN COMPONENT 'SRTFD' OF STRUCTURE <line> TO <field>.
+        IF sy-subrc EQ 0.
+          cdkey = <field>.
 
-    "Abrechnungskreise für PA03 sammeln
-    CLEAR l_abkrs.
-    REFRESH s_abkrs.
-    l_abkrs-sign = 'I'.
-    l_abkrs-option = 'EQ'.
-    LOOP AT <lt_itab> ASSIGNING <line>.
-      ASSIGN COMPONENT 'SRTFD' OF STRUCTURE <line> TO <field>.
-      IF sy-subrc EQ 0.
-        cdkey = <field>.
+          REFRESH rgdir.
+          IMPORT rgdir TO rgdir
+          FROM DATABASE pcl2(cu)
+          ID cdkey.
+          LOOP AT rgdir INTO ls_rgdir.
+            l_abkrs-low = ls_rgdir-abkrs.
+            COLLECT l_abkrs INTO s_abkrs.
+          ENDLOOP.
+        ENDIF.
+      ENDLOOP.
+*          ENDIF.
 
-        REFRESH rgdir.
-        IMPORT rgdir TO rgdir
-        FROM DATABASE pcl2(cu)
-        ID cdkey.
-        LOOP AT rgdir INTO ls_rgdir.
-          l_abkrs-low = ls_rgdir-abkrs.
-          COLLECT l_abkrs INTO s_abkrs.
-        ENDLOOP.
-      ENDIF.
-    ENDLOOP.
-
+    ENDSELECT.
 
     "Zentrale Personen
     CREATE DATA ldo_data TYPE TABLE OF hrp1000.
