@@ -76,6 +76,7 @@ START-OF-SELECTION.
 
 
   PERFORM write_data_to_tables.
+  PERFORM show_result.
 
   PERFORM liste.
 

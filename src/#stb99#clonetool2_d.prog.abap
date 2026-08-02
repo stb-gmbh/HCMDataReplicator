@@ -33,3 +33,18 @@ DATA:  gr_infty TYPE tr_infty.
 
 DATA pernr_anzhl TYPE i.
 DATA lv_msg TYPE text256.
+
+TYPES:
+  BEGIN OF ty_result,
+    status       TYPE icon_d,
+    tabname      TYPE tabname,
+    add_info     TYPE char100,
+    lines_read   TYPE i,
+    size_kb      TYPE p LENGTH 10 DECIMALS 2,
+    lines_write  TYPE i,
+    message      TYPE char200,
+  END OF ty_result.
+
+DATA:
+  gt_result TYPE STANDARD TABLE OF ty_result,
+  gs_result TYPE ty_result.
