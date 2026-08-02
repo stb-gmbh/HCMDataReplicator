@@ -91,6 +91,7 @@ END-OF-SELECTION.
 *----------------------------------------------------------------------*
 FORM overwrite_customizing_with_sel .
   IF p_org IS NOT INITIAL. p_custom-org       = p_org. ENDIF.
+  IF p_wegid IS NOT INITIAL. p_custom-wegid       = p_wegid. ENDIF.
   IF p_calc IS NOT INITIAL. p_custom-calc       = p_calc. ENDIF.
   IF p_pcp0 IS NOT INITIAL. p_custom-pcp0       = p_pcp0. ENDIF.
   IF p_deuv IS NOT INITIAL. p_custom-deuv       = p_deuv. ENDIF.
