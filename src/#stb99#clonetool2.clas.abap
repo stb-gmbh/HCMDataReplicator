@@ -175,7 +175,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ( tabname = 'PCL1'
         relid   = 'B1' ) " BDE-Daten
 
-      ( tabname = 'PCL1'
+      ( tabname = 'PCL2'
         relid   = 'B2' ) " BDE-Auswertung / PDC-Evaluation
 
 *      ( tabname = 'PCL1'
@@ -930,7 +930,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       CASE ls_clst-tabname.
         WHEN 'PCL1'.
           CASE ls_clst-relid.
-            WHEN 'B1' OR 'B2' OR 'PC'.
+            WHEN 'B1' OR 'PC'.
               "Personalnummer*
               CLEAR l_srtfd.
               l_srtfd-option = 'CP'.
@@ -945,7 +945,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           ENDCASE.
         WHEN 'PCL2'.
           CASE ls_clst-relid.
-            WHEN 'CU' OR 'RD'.
+            WHEN 'CU' OR 'RD' or 'B2'.
               "Personalnummer*
               CLEAR l_srtfd.
               l_srtfd-option = 'CP'.
