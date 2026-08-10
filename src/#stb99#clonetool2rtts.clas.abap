@@ -7,9 +7,7 @@ CLASS /stb99/clonetool2rtts DEFINITION
 
     TYPES:
       BEGIN OF ty_component,
-        level     TYPE i,
-        path      TYPE string,
-        name      TYPE string,
+        name      TYPE fieldname,
         typekind  TYPE c LENGTH 1,
         length    TYPE i,
         decimals  TYPE i,
@@ -18,28 +16,21 @@ CLASS /stb99/clonetool2rtts DEFINITION
       tt_components TYPE STANDARD TABLE OF ty_component
                     WITH DEFAULT KEY.
 
-    "Strukturbeschreibung einer internen Tabelle erzeugen
+
+    "----------------------------------------------------------
+    " Tabellenstruktur beschreiben
+    " INCLUDE-Strukturen werden aufgelöst
+    "----------------------------------------------------------
     CLASS-METHODS describe_table
       IMPORTING
         it_table       TYPE ANY TABLE
       RETURNING
         VALUE(rt_desc) TYPE tt_components.
 
-    "Strukturbeschreibung einer Struktur erzeugen
-    CLASS-METHODS describe_structure
-      IMPORTING
-        io_struct      TYPE REF TO cl_abap_structdescr
-      RETURNING
-        VALUE(rt_desc) TYPE tt_components.
 
-    "Struktur aus übertragener Beschreibung rekonstruieren
-    CLASS-METHODS create_structure
-      IMPORTING
-        it_desc          TYPE tt_components
-      RETURNING
-        VALUE(ro_struct) TYPE REF TO cl_abap_structdescr.
-
-    "Tabellentyp aus übertragener Beschreibung rekonstruieren
+    "----------------------------------------------------------
+    " Aus Beschreibung wieder einen flachen Tabellentyp erzeugen
+    "----------------------------------------------------------
     CLASS-METHODS create_table
       IMPORTING
         it_desc         TYPE tt_components
@@ -49,25 +40,9 @@ CLASS /stb99/clonetool2rtts DEFINITION
 
   PRIVATE SECTION.
 
-    "Rekursives Zerlegen einer Struktur
-    CLASS-METHODS describe_recursive
-      IMPORTING
-        io_struct TYPE REF TO cl_abap_structdescr
-        iv_level  TYPE i
-        iv_path   TYPE string
-      CHANGING
-        ct_desc   TYPE tt_components.
-
-    "Rekursives Wiederaufbauen einer Struktur
-    CLASS-METHODS create_structure_recursive
-      IMPORTING
-        it_desc          TYPE tt_components
-        iv_level         TYPE i
-        iv_path          TYPE string
-      RETURNING
-        VALUE(ro_struct) TYPE REF TO cl_abap_structdescr.
-
-    "Elementaren Datentyp erzeugen
+    "----------------------------------------------------------
+    " Elementaren ABAP-Typ erzeugen
+    "----------------------------------------------------------
     CLASS-METHODS create_element
       IMPORTING
         is_desc        TYPE ty_component
@@ -86,11 +61,12 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
     DATA:
       lo_element TYPE REF TO cl_abap_elemdescr.
 
+
     CASE is_desc-typekind.
 
 
       "--------------------------------------------------------
-      "CHAR
+      " CHAR
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_char.
 
@@ -100,7 +76,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "NUMC
+      " NUMC
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_num.
 
@@ -110,7 +86,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "DATS
+      " DATS
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_date.
 
@@ -119,7 +95,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "TIMS
+      " TIMS
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_time.
 
@@ -128,7 +104,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "INT4
+      " INT4
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_int.
 
@@ -137,7 +113,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "INT1
+      " INT1
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_int1.
 
@@ -146,7 +122,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "INT2
+      " INT2
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_int2.
 
@@ -155,7 +131,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "INT8
+      " INT8
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_int8.
 
@@ -164,7 +140,10 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "PACKED / DEC
+      " PACKED
+      "
+      " Darunter fallen auf ABAP-Ebene typischerweise
+      " DEC/CURR/QUAN-artige Felder.
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_packed.
 
@@ -175,7 +154,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "FLOAT
+      " FLOAT
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_float.
 
@@ -184,7 +163,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "RAW / X
+      " RAW / X
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_hex.
 
@@ -194,7 +173,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "STRING
+      " STRING
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_string.
 
@@ -203,7 +182,7 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
 
 
       "--------------------------------------------------------
-      "XSTRING
+      " XSTRING
       "--------------------------------------------------------
       WHEN cl_abap_typedescr=>typekind_xstring.
 
@@ -211,103 +190,17 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
           cl_abap_elemdescr=>get_xstring( ).
 
 
+      "--------------------------------------------------------
+      " Typ wird bislang nicht unterstützt
+      "--------------------------------------------------------
       WHEN OTHERS.
 
         RAISE EXCEPTION TYPE cx_sy_create_data_error.
 
     ENDCASE.
 
+
     ro_elem = lo_element.
-
-  ENDMETHOD.
-
-
-  METHOD create_structure.
-
-    ro_struct =
-      create_structure_recursive(
-        it_desc  = it_desc
-        iv_level = 1
-        iv_path  = '' ).
-
-  ENDMETHOD.
-
-
-  METHOD create_structure_recursive.
-
-    DATA:
-      lt_components TYPE cl_abap_structdescr=>component_table,
-      ls_component  LIKE LINE OF lt_components,
-      ls_desc       TYPE ty_component,
-      lo_substruct  TYPE REF TO cl_abap_structdescr,
-      lo_element    TYPE REF TO cl_abap_datadescr,
-      lv_subpath    TYPE string.
-
-    CLEAR lt_components.
-
-    LOOP AT it_desc INTO ls_desc
-      WHERE level = iv_level
-        AND path  = iv_path.
-
-      CLEAR:
-        ls_component,
-        lv_subpath.
-
-      ls_component-name = ls_desc-name.
-
-
-      "--------------------------------------------------------
-      "Komponente ist wiederum eine Struktur
-      "--------------------------------------------------------
-      IF ls_desc-typekind =
-           cl_abap_typedescr=>typekind_struct1
-      OR ls_desc-typekind =
-           cl_abap_typedescr=>typekind_struct2.
-
-        IF iv_path IS INITIAL.
-
-          lv_subpath = ls_desc-name.
-
-        ELSE.
-
-          CONCATENATE
-            iv_path
-            ls_desc-name
-            INTO lv_subpath
-            SEPARATED BY '.'.
-
-        ENDIF.
-
-        lo_substruct =
-          create_structure_recursive(
-            it_desc  = it_desc
-            iv_level = iv_level + 1
-            iv_path  = lv_subpath ).
-
-        ls_component-type = lo_substruct.
-
-
-      ELSE.
-
-        "------------------------------------------------------
-        "Elementares Feld
-        "------------------------------------------------------
-        lo_element =
-          create_element(
-            is_desc = ls_desc ).
-
-        ls_component-type = lo_element.
-
-      ENDIF.
-
-      APPEND ls_component TO lt_components.
-
-    ENDLOOP.
-
-
-    ro_struct =
-      cl_abap_structdescr=>create(
-        p_components = lt_components ).
 
   ENDMETHOD.
 
@@ -315,97 +208,60 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
   METHOD create_table.
 
     DATA:
-      lo_struct TYPE REF TO cl_abap_structdescr.
-
-    lo_struct =
-      create_structure(
-        it_desc = it_desc ).
-
-    ro_table =
-      cl_abap_tabledescr=>create(
-        p_line_type = lo_struct ).
-
-  ENDMETHOD.
-
-
-  METHOD describe_recursive.
-
-    DATA:
       lt_components TYPE cl_abap_structdescr=>component_table,
       ls_component  LIKE LINE OF lt_components,
       ls_desc       TYPE ty_component,
-      lo_substruct  TYPE REF TO cl_abap_structdescr,
-      lv_path       TYPE string.
-
-    lt_components =
-      io_struct->get_components( ).
-
-    LOOP AT lt_components INTO ls_component.
-
-      CLEAR:
-        ls_desc,
-        lv_path.
-
-      ls_desc-level     = iv_level.
-      ls_desc-path      = iv_path.
-      ls_desc-name      = ls_component-name.
-      ls_desc-typekind  = ls_component-type->type_kind.
-      ls_desc-length    = ls_component-type->length.
-      ls_desc-decimals  = ls_component-type->decimals.
-
-      APPEND ls_desc TO ct_desc.
+      lo_element    TYPE REF TO cl_abap_datadescr,
+      lo_struct     TYPE REF TO cl_abap_structdescr.
 
 
-      "--------------------------------------------------------
-      "Komponente ist selbst wieder eine Struktur
-      "--------------------------------------------------------
-      IF ls_component-type->type_kind =
-           cl_abap_typedescr=>typekind_struct1
-      OR ls_component-type->type_kind =
-           cl_abap_typedescr=>typekind_struct2.
+    CLEAR lt_components.
 
-        lo_substruct ?= ls_component-type.
 
-        IF iv_path IS INITIAL.
+    "----------------------------------------------------------
+    " Komponenten aus der übertragenen Beschreibung erzeugen
+    "----------------------------------------------------------
+    LOOP AT it_desc INTO ls_desc.
 
-          lv_path = ls_component-name.
-
-        ELSE.
-
-          CONCATENATE
-            iv_path
-            ls_component-name
-            INTO lv_path
-            SEPARATED BY '.'.
-
-        ENDIF.
-
-        describe_recursive(
-          EXPORTING
-            io_struct = lo_substruct
-            iv_level  = iv_level + 1
-            iv_path   = lv_path
-          CHANGING
-            ct_desc   = ct_desc ).
-
+      IF ls_desc-name IS INITIAL.
+        CONTINUE.
       ENDIF.
+
+
+      CLEAR ls_component.
+
+      ls_component-name = ls_desc-name.
+
+
+      "Elementaren Typ wieder erzeugen
+      lo_element =
+        create_element(
+          is_desc = ls_desc ).
+
+
+      ls_component-type = lo_element.
+
+      APPEND ls_component TO lt_components.
 
     ENDLOOP.
 
-  ENDMETHOD.
+
+    "----------------------------------------------------------
+    " Flache Struktur erzeugen
+    "----------------------------------------------------------
+    lo_struct =
+      cl_abap_structdescr=>create(
+        p_components = lt_components ).
 
 
-  METHOD describe_structure.
-
-    CLEAR rt_desc.
-
-    describe_recursive(
-      EXPORTING
-        io_struct = io_struct
-        iv_level  = 1
-        iv_path   = ''
-      CHANGING
-        ct_desc   = rt_desc ).
+    "----------------------------------------------------------
+    " Standard-Tabellentyp erzeugen
+    "----------------------------------------------------------
+    ro_table =
+      cl_abap_tabledescr=>create(
+        p_line_type  = lo_struct
+        p_table_kind = cl_abap_tabledescr=>tablekind_std
+        p_unique     = abap_false ).
 
   ENDMETHOD.
 
@@ -415,19 +271,61 @@ CLASS /STB99/CLONETOOL2RTTS IMPLEMENTATION.
     DATA:
       lo_type   TYPE REF TO cl_abap_typedescr,
       lo_table  TYPE REF TO cl_abap_tabledescr,
-      lo_struct TYPE REF TO cl_abap_structdescr.
+      lo_struct TYPE REF TO cl_abap_structdescr,
+      ls_desc   TYPE ty_component.
 
+
+    "----------------------------------------------------------
+    " Typ der übergebenen internen Tabelle bestimmen
+    "----------------------------------------------------------
     lo_type =
       cl_abap_typedescr=>describe_by_data( it_table ).
 
     lo_table ?= lo_type.
 
+
+    "----------------------------------------------------------
+    " Zeilentyp der internen Tabelle bestimmen
+    "----------------------------------------------------------
     lo_struct ?=
       lo_table->get_table_line_type( ).
 
-    rt_desc =
-      describe_structure(
-        io_struct = lo_struct ).
+
+    "----------------------------------------------------------
+    " INCLUDE-Strukturen auflösen
+    "
+    " WICHTIG:
+    " Der Rückgabetyp ist NICHT component_table.
+    " Deshalb Inline-Deklaration verwenden.
+    "----------------------------------------------------------
+    DATA(lt_components) =
+      lo_struct->get_included_view( ).
+
+
+    CLEAR rt_desc.
+
+
+    "----------------------------------------------------------
+    " Referenzfreie Beschreibung erzeugen
+    "----------------------------------------------------------
+    LOOP AT lt_components INTO DATA(ls_component).
+
+      "Leere Komponentennamen nicht übernehmen
+      IF ls_component-name IS INITIAL.
+        CONTINUE.
+      ENDIF.
+
+
+      CLEAR ls_desc.
+
+      ls_desc-name      = ls_component-name.
+      ls_desc-typekind  = ls_component-type->type_kind.
+      ls_desc-length    = ls_component-type->length.
+      ls_desc-decimals  = ls_component-type->decimals.
+
+      APPEND ls_desc TO rt_desc.
+
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

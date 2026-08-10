@@ -296,12 +296,17 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_fields_with_pernr.
     DATA:
-      lx        TYPE xstring,
-      ldo_data  TYPE REF TO data,
-      ls_cloned TYPE /stb99/tables.
+      lx            TYPE xstring,
+      ldo_data      TYPE REF TO data,
+      lr_flat_data  TYPE REF TO data,
+      lo_flat_table TYPE REF TO cl_abap_tabledescr,
+      ls_cloned     TYPE /stb99/tables.
     DATA: lt_desc   TYPE /stb99/clonetool2rtts=>tt_components.
 
-    FIELD-SYMBOLS: <lt_itab>    TYPE table.
+    FIELD-SYMBOLS: <lt_itab>    TYPE table,
+                   <lt_flat>   TYPE table,
+                   <ls_source> TYPE any,
+                   <ls_flat>   TYPE any.
 
     CREATE DATA ldo_data TYPE TABLE OF (tabname).
     ASSIGN ldo_data->* TO <lt_itab>.
@@ -310,24 +315,53 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
               WHERE pernr IN at_pernr.
 
     IF <lt_itab>[] IS NOT INITIAL.
+
+
+
+
       "------------------------------------------------------------
-      "Originalstruktur des Quellsystems beschreiben
+      "Flache Beschreibung erzeugen
       "------------------------------------------------------------
       lt_desc =
         /stb99/clonetool2rtts=>describe_table(
           it_table = <lt_itab> ).
 
-      DELETE lt_desc WHERE typekind eq 'u'.
-      LOOP AT lt_desc ASSIGNING FIELD-SYMBOL(<line>).
-        <line>-level = 1.
-      ENDLOOP.
+
       "------------------------------------------------------------
-      "Daten UND Strukturbeschreibung in denselben Buffer
+      "Flache Tabelle erzeugen
+      "------------------------------------------------------------
+      lo_flat_table =
+        /stb99/clonetool2rtts=>create_table(
+          it_desc = lt_desc ).
+
+
+      CREATE DATA lr_flat_data
+        TYPE HANDLE lo_flat_table.
+
+      ASSIGN lr_flat_data->* TO <lt_flat>.
+
+
+      "------------------------------------------------------------
+      "Original -> flache Übertragungsstruktur
+      "------------------------------------------------------------
+      LOOP AT <lt_itab> ASSIGNING <ls_source>.
+
+        APPEND INITIAL LINE TO <lt_flat>
+          ASSIGNING <ls_flat>.
+
+        MOVE-CORRESPONDING <ls_source> TO <ls_flat>.
+
+      ENDLOOP.
+
+
+      "------------------------------------------------------------
+      "Jetzt wird nur noch die flache Struktur serialisiert
       "------------------------------------------------------------
       EXPORT
-        p1 = <lt_itab>
+        p1 = <lt_flat>
         p2 = lt_desc
         TO DATA BUFFER lx.
+
 
       APPEND lx TO at_xstrtab.
       ls_cloned-index = sy-tabix.
