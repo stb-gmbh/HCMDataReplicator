@@ -49,6 +49,9 @@ public section.
   methods READ_TABLE_WITH_PERNR
     importing
       !TABNAME type TABNAME .
+  methods READ_FIELDS_WITH_PERNR
+    importing
+      !TABNAME type TABNAME .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -287,6 +290,89 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ENDIF.
 
     COMMIT WORK AND WAIT.
+
+  ENDMETHOD.
+
+
+  METHOD read_fields_with_pernr.
+*    DATA:
+*      lx        TYPE xstring,
+*      ldo_data  TYPE REF TO data,
+*      ls_cloned TYPE /stb99/tables.
+**
+*    FIELD-SYMBOLS: <lt_itab>    TYPE table.
+**
+*    CREATE DATA ldo_data TYPE TABLE OF (tabname).
+*    ASSIGN ldo_data->* TO <lt_itab>.
+*
+*    SELECT * FROM (tabname) INTO TABLE <lt_itab>
+*              WHERE pernr IN at_pernr.
+*
+**    IF <lt_itab>[] IS NOT INITIAL.
+**      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+**      APPEND lx TO at_xstrtab.
+**      ls_cloned-index = sy-tabix.
+**      ls_cloned-tabname = tabname.
+**      APPEND ls_cloned TO at_cloned_tables.
+**    ENDIF.
+**
+*    TYPES:
+*      BEGIN OF ty_cell,
+*        rowno     TYPE i,
+*        fieldname TYPE fieldname,
+*        value     TYPE xstring,
+*      END OF ty_cell,
+*
+*      tt_cell TYPE STANDARD TABLE OF ty_cell WITH EMPTY KEY.
+*
+*    DATA:
+*      lt_cells TYPE tt_cell,
+*      ls_cell  TYPE ty_cell,
+*      lv_rowno TYPE i.
+*
+*    FIELD-SYMBOLS:
+*      <ls_row>   TYPE any,
+*      <lv_field> TYPE any.
+*
+*    CLEAR lt_cells.
+*    lv_rowno = 0.
+*
+*    LOOP AT <lt_itab> ASSIGNING <ls_row>.
+*
+*      ADD 1 TO lv_rowno.
+*
+*      DATA(lo_struct) =
+*        CAST cl_abap_structdescr(
+*          cl_abap_typedescr=>describe_by_data( <ls_row> )
+*        ).
+*
+*      LOOP AT lo_struct->components INTO DATA(ls_component).
+*
+*        ASSIGN COMPONENT ls_component-name
+*          OF STRUCTURE <ls_row>
+*          TO <lv_field>.
+*
+*        IF sy-subrc <> 0.
+*          CONTINUE.
+*        ENDIF.
+*
+*        CLEAR ls_cell.
+*        ls_cell-rowno     = lv_rowno.
+*        ls_cell-fieldname = ls_component-name.
+*
+*        EXPORT value = <lv_field>
+*          TO DATA BUFFER ls_cell-value.
+*
+*        APPEND ls_cell TO lt_cells.
+*
+*      ENDLOOP.
+*
+*    ENDLOOP.
+*
+*    EXPORT p1 = lt_cells TO DATA BUFFER lx.
+*
+
+
 
   ENDMETHOD.
 
@@ -1780,6 +1866,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_tables_trvl.
     CHECK me->customizing-trvl IS NOT INITIAL.
+
+    CALL METHOD me->read_fields_with_pernr EXPORTING tabname = 'PTRV_HEAD'.
+
+
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_B'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_S'.
