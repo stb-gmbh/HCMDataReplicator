@@ -176,15 +176,21 @@ FORM write_data_to_tables .
     READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
 
     REFRESH <lt_itab>.
-    "Bei Strukturunterschied
-    TRY.
-        IMPORT p1 = <lt_itab> FROM DATA BUFFER lx. "itab Tabelle füllen dekodiert aus lx
-      CATCH cx_root.
-        PERFORM add_result
-  USING ls_cloned-tabname add_info l_lines l_size sy-dbcnt 2 'konnte wegen Strukturunterschied nicht importiert werden.' .
 
-        CONTINUE. "nächster Loop
-    ENDTRY.
+
+    CASE ls_cloned-mode.
+      WHEN 'M'.
+        PERFORM read_dynamic_table.
+      WHEN OTHERS.
+        "Bei Strukturunterschied
+        TRY.
+            IMPORT p1 = <lt_itab> FROM DATA BUFFER lx. "itab Tabelle füllen dekodiert aus lx
+          CATCH cx_root.
+            PERFORM add_result
+              USING ls_cloned-tabname add_info l_lines l_size sy-dbcnt 2 'konnte wegen Strukturunterschied nicht importiert werden.' .
+            CONTINUE. "nächster Loop
+        ENDTRY.
+    ENDCASE.
 
     DESCRIBE TABLE <lt_itab> LINES l_lines. "Datensätze
     CLEAR add_info.

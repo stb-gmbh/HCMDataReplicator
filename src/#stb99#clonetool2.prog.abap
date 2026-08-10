@@ -127,3 +127,77 @@ FORM overwrite_customizing_with_sel .
 ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
 
 INCLUDE /stb99/clonetool2_forms.
+*&---------------------------------------------------------------------*
+*&      Form  READ_DYNAMIC_TABLE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM read_dynamic_table .
+
+  DATA:
+    lt_desc        TYPE /stb99/clonetool2rtts=>tt_components,
+    lo_table_descr TYPE REF TO cl_abap_tabledescr,
+    lr_source_data TYPE REF TO data.
+
+  FIELD-SYMBOLS:
+    <lt_source> TYPE table.
+
+  READ TABLE lt_xstring
+    INTO lx
+    INDEX ls_cloned-index.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CLEAR lt_desc.
+
+  IMPORT
+    p2 = lt_desc
+    FROM DATA BUFFER lx.
+
+  lo_table_descr =
+    /stb99/clonetool2rtts=>create_table(
+      it_desc = lt_desc ).
+
+  CREATE DATA lr_source_data
+    TYPE HANDLE lo_table_descr.
+
+  ASSIGN lr_source_data->* TO <lt_source>.
+
+  TRY.
+
+      IMPORT
+        p1 = <lt_source>
+        FROM DATA BUFFER lx.
+
+    CATCH cx_root INTO DATA(lx_error).
+
+      PERFORM add_result
+        USING
+          ls_cloned-tabname
+          space
+          l_lines
+          l_size
+          sy-dbcnt
+          2
+          'Originaldaten konnten nicht importiert werden.'.
+  ENDTRY.
+
+  FIELD-SYMBOLS:
+    <ls_source> TYPE any,
+    <ls_target> TYPE any.
+
+  LOOP AT <lt_source> ASSIGNING <ls_source>.
+
+    APPEND INITIAL LINE TO <lt_itab>
+      ASSIGNING <ls_target>.
+
+    MOVE-CORRESPONDING <ls_source> TO <ls_target>.
+
+  ENDLOOP.
+
+ENDFORM.
