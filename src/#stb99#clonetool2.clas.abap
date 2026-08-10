@@ -197,6 +197,9 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ( tabname = 'PCL1'
         relid   = 'PC' ) " Persönlicher Kalender
 
+      ( tabname = 'PCL1'
+        relid   = 'TE' ) " Reisekosten
+
 
 *   ---------------------------------------------------------------
 *   PCL2 - Personalabrechnung Deutschland
@@ -1013,7 +1016,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       CASE ls_clst-tabname.
         WHEN 'PCL1'.
           CASE ls_clst-relid.
-            WHEN 'B1' OR 'PC'.
+            WHEN 'B1' OR 'PC' or 'TE'.
               "Personalnummer*
               CLEAR l_srtfd.
               l_srtfd-option = 'CP'.
