@@ -317,6 +317,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         /stb99/clonetool2rtts=>describe_table(
           it_table = <lt_itab> ).
 
+      DELETE lt_desc WHERE typekind eq 'u'.
+      LOOP AT lt_desc ASSIGNING FIELD-SYMBOL(<line>).
+        <line>-level = 1.
+      ENDLOOP.
       "------------------------------------------------------------
       "Daten UND Strukturbeschreibung in denselben Buffer
       "------------------------------------------------------------
