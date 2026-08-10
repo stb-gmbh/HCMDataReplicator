@@ -78,6 +78,17 @@ START-OF-SELECTION.
   PERFORM write_data_to_tables.
   PERFORM show_result.
 
+  IF sy-sysid EQ 'H4D'.
+    SUBMIT zhr_after_import
+  AND RETURN.
+
+    IF sy-subrc = 0.
+      WRITE: / 'ZHR_AFTER_IMPORT erfolgreich ausgeführt'.
+    ELSE.
+      WRITE: / 'Fehler beim Aufruf von ZHR_AFTER_IMPORT'.
+    ENDIF.
+  ENDIF.
+
   PERFORM liste.
 
 END-OF-SELECTION.

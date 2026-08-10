@@ -1864,6 +1864,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CHECK me->customizing-trvl IS NOT INITIAL.
 
     CALL METHOD me->read_fields_with_pernr EXPORTING tabname = 'PTRV_HEAD'.
+    CALL METHOD me->read_fields_with_pernr EXPORTING tabname = 'PTRV_PERIO'.
 
 
 
@@ -1876,10 +1877,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_ARCH_PERIO'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_CHAIN_MPD'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_CHANGE'.
-    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_HEAD'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_KMSUM'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_NOT_CH_TR'.
-    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_PERIO'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_RECDETAIL'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_SADD'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_SBACKLOG'.
