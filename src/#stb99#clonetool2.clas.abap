@@ -325,7 +325,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         p2 = lt_desc
         TO DATA BUFFER lx.
 
-      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
       APPEND lx TO at_xstrtab.
       ls_cloned-index = sy-tabix.
       ls_cloned-tabname = tabname.
