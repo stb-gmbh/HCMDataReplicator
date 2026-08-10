@@ -204,6 +204,12 @@
      <LANGU>D</LANGU>
      <DESCRIPT>Lesen einer Tabelle mit Persoanlnummer</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/STB99/CLONETOOL2</CLSNAME>
+     <CMPNAME>READ_TEMP_T596M</CMPNAME>
+     <LANGU>D</LANGU>
+     <DESCRIPT>T596M (Werma)</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

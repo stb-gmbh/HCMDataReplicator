@@ -71,6 +71,7 @@ PARAMETERS: p_eubp TYPE /stb99/ct2_cust_eubp AS CHECKBOX.
 PARAMETERS: p_betri TYPE /stb99/ct2_cust_betri AS CHECKBOX.
 PARAMETERS: p_beitr TYPE /stb99/ct2_cust_beitr AS CHECKBOX.
 PARAMETERS: p_agkto TYPE /stb99/ct2_cust_agkto AS CHECKBOX.
+PARAMETERS: p_t596m TYPE /stb99/ct2_cust_t596m AS CHECKBOX.
 
 SELECTION-SCREEN END OF SCREEN 030.
 

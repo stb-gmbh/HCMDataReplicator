@@ -52,25 +52,26 @@ public section.
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
-  PRIVATE SECTION.
+private section.
 
-    DATA at_pernr TYPE /stb99/range_pernr_t .
-    DATA at_cloned_tables TYPE /stb99/tables_t .
-    DATA at_xstrtab TYPE /stb99/xtab .
-    DATA at_infty TYPE /stb99/stb_infty_range_t .
+  data AT_PERNR type /STB99/RANGE_PERNR_T .
+  data AT_CLONED_TABLES type /STB99/TABLES_T .
+  data AT_XSTRTAB type /STB99/XTAB .
+  data AT_INFTY type /STB99/STB_INFTY_RANGE_T .
 
-    METHODS read_meld_a1 .
-    METHODS read_meld_bv .
-    METHODS read_meld_deuev .
-    METHODS read_meld_ea .
-    METHODS read_meld_eau .
-    METHODS read_meld_ee .
-    METHODS read_meld_elena .
-    METHODS read_meld_elstam .
-    METHODS read_meld_krankenkassen .
-    METHODS read_meld_lstb .
-    METHODS read_meld_rbm .
-    METHODS read_meld_zs .
+  methods READ_MELD_A1 .
+  methods READ_MELD_BV .
+  methods READ_MELD_DEUEV .
+  methods READ_MELD_EA .
+  methods READ_MELD_EAU .
+  methods READ_MELD_EE .
+  methods READ_MELD_ELENA .
+  methods READ_MELD_ELSTAM .
+  methods READ_MELD_KRANKENKASSEN .
+  methods READ_MELD_LSTB .
+  methods READ_MELD_RBM .
+  methods READ_MELD_ZS .
+  methods READ_TEMP_T596M .
 ENDCLASS.
 
 
@@ -132,18 +133,18 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_arbeitgeberkonto. "Meldeverfahren Arbeitgeberkonto
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
+    CALL METHOD me->read_temp_t596m.
+
+    "dabpv
+    "versicheurngsnummer vav
+    "KEG
+    "beitragsnachweis
+    "ESS ABW PTCOR
+    "ptquoded
 
 
-"dabpv
-"versicheurngsnummer vav
-"KEG
-"beitragsnachweis
-"ESS ABW PTCOR
-"ptquoded
 
-
-
-"PCL1:
+    "PCL1:
 *TA	RP-Reisekosten allg. Daten
 *TC	RP-Reisekosten Kreditkartendaten
 *TE	RP-Reisekosten international
@@ -1973,6 +1974,15 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       APPEND ls_cloned TO at_cloned_tables.
     ENDIF.
 
+
+  ENDMETHOD.
+
+
+  METHOD READ_TEMP_T596M.
+
+    CHECK me->customizing-t596m IS NOT INITIAL.
+
+    CALL METHOD me->read_table_complete EXPORTING tabname = 'T596M'.
 
   ENDMETHOD.
 ENDCLASS.

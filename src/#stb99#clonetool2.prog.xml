@@ -552,6 +552,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_T596M</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_TEST</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>12</LENGTH>
