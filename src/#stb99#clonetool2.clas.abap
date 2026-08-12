@@ -52,6 +52,7 @@ public section.
   methods READ_FIELDS_WITH_PERNR
     importing
       !TABNAME type TABNAME .
+  methods READ_TABLE_GOS .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -137,6 +138,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
     CALL METHOD me->read_temp_t596m.
+    CALL METHOD me->read_table_gos.
 
     "dabpv
     "versicheurngsnummer vav
@@ -1983,6 +1985,339 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
 
+
+
+
+  ENDMETHOD.
+
+
+  METHOD read_table_gos.
+    CHECK me->customizing-gos IS NOT INITIAL.
+
+*---------------------------------------------------------------------*
+* Typen
+*---------------------------------------------------------------------*
+    TYPES:
+      BEGIN OF ty_attachment,
+        pernr        TYPE pernr_d,
+        instid_a     TYPE srgbtbrel-instid_a,
+        typeid_a     TYPE srgbtbrel-typeid_a,
+        instid_b     TYPE srgbtbrel-instid_b,
+        typeid_b     TYPE srgbtbrel-typeid_b,
+        reltype      TYPE srgbtbrel-reltype,
+
+        objtp        TYPE sood-objtp,
+        objyr        TYPE sood-objyr,
+        objno        TYPE sood-objno,
+        objdes       TYPE sood-objdes,
+
+        filename     TYPE string,
+        file_ext     TYPE string,
+        file_size    TYPE i,
+
+        content_hex  TYPE solix_tab,
+        content_xstr TYPE xstring,
+      END OF ty_attachment,
+
+      tt_attachment TYPE STANDARD TABLE OF ty_attachment
+                    WITH DEFAULT KEY.
+
+*---------------------------------------------------------------------*
+* Daten
+*---------------------------------------------------------------------*
+    DATA:
+      gt_attachments TYPE tt_attachment.
+
+    DATA:
+      lt_relations     TYPE STANDARD TABLE OF srgbtbrel,
+      ls_relation      TYPE srgbtbrel,
+
+      ls_attachment    TYPE ty_attachment,
+
+      ls_sood          TYPE sood,
+
+      lv_pernr         TYPE pernr_d,
+
+      lv_len           TYPE i,
+      lv_offset        TYPE i,
+
+      lv_folder_key    TYPE c LENGTH 17,
+      lv_doc_key       TYPE c LENGTH 17,
+
+      lv_objtp         TYPE sood-objtp,
+      lv_objyr         TYPE sood-objyr,
+      lv_objno         TYPE sood-objno,
+
+      lv_folder_id     TYPE soodk,
+      lv_object_id     TYPE soodk,
+
+      ls_object_hd     TYPE sood2,
+
+      lt_objcont       TYPE STANDARD TABLE OF soli,
+      lt_objhead       TYPE STANDARD TABLE OF soli,
+      ls_objhead       TYPE soli,
+
+      lt_solix         TYPE solix_tab,
+
+      lv_xstring       TYPE xstring,
+      lv_filename      TYPE string,
+      lv_ext           TYPE string,
+
+      lv_output_length TYPE i.
+
+
+    LOOP AT at_pernr ASSIGNING FIELD-SYMBOL(<ls_pernr>).
+
+*---------------------------------------------------------------------*
+* GOS-Verknüpfungen lesen
+*---------------------------------------------------------------------*
+      SELECT *
+        FROM srgbtbrel
+        INTO TABLE lt_relations
+        WHERE typeid_a = 'BUS1065'
+          AND instid_a = lv_pernr
+          AND catid_a  = 'BO'
+          AND reltype  = 'ATTA'
+          AND typeid_b = 'MESSAGE'.
+
+      LOOP AT lt_relations INTO ls_relation.
+
+        CLEAR:
+          ls_attachment,
+          ls_sood,
+          lv_len,
+          lv_offset,
+          lv_folder_key,
+          lv_doc_key,
+          lv_objtp,
+          lv_objyr,
+          lv_objno,
+          lv_folder_id,
+          lv_object_id,
+          ls_object_hd,
+          lt_objcont,
+          lt_objhead,
+          lt_solix,
+          lv_xstring,
+          lv_filename,
+          lv_ext,
+          lv_output_length.
+
+*---------------------------------------------------------------------*
+* Grunddaten übernehmen
+*---------------------------------------------------------------------*
+        ls_attachment-pernr    = <ls_pernr>-low.
+        ls_attachment-instid_a = ls_relation-instid_a.
+        ls_attachment-typeid_a = ls_relation-typeid_a.
+        ls_attachment-instid_b = ls_relation-instid_b.
+        ls_attachment-typeid_b = ls_relation-typeid_b.
+        ls_attachment-reltype  = ls_relation-reltype.
+
+*---------------------------------------------------------------------*
+* INSTID_B zerlegen
+*
+* Beispiel:
+*
+* FOL2600000000024EXT5100000000033
+*
+* FOL2600000000024 = Folder
+* EXT5100000000033 = Dokument
+*---------------------------------------------------------------------*
+        lv_len = strlen( ls_relation-instid_b ).
+
+        IF lv_len < 34.
+          CONTINUE.
+        ENDIF.
+
+*---------------------------------------------------------------------*
+* letzte 17 Zeichen = Dokument-ID
+*---------------------------------------------------------------------*
+        lv_offset = lv_len - 17.
+
+        lv_doc_key = ls_relation-instid_b+lv_offset(17).
+
+*---------------------------------------------------------------------*
+* davor liegende 17 Zeichen = Folder-ID
+*---------------------------------------------------------------------*
+        lv_offset = lv_offset - 17.
+
+        lv_folder_key = ls_relation-instid_b+lv_offset(17).
+
+*---------------------------------------------------------------------*
+* Dokument-Key zerlegen
+*---------------------------------------------------------------------*
+        lv_objtp = lv_doc_key+0(3).
+        lv_objyr = lv_doc_key+3(2).
+        lv_objno = lv_doc_key+5(12).
+
+*---------------------------------------------------------------------*
+* SOOD lesen
+*---------------------------------------------------------------------*
+        SELECT SINGLE *
+          FROM sood
+          INTO ls_sood
+          WHERE objtp = lv_objtp
+            AND objyr = lv_objyr
+            AND objno = lv_objno.
+
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+
+        ls_attachment-objtp  = ls_sood-objtp.
+        ls_attachment-objyr  = ls_sood-objyr.
+        ls_attachment-objno  = ls_sood-objno.
+        ls_attachment-objdes = ls_sood-objdes.
+
+*---------------------------------------------------------------------*
+* SOODK Folder
+*---------------------------------------------------------------------*
+        lv_folder_id-objtp = lv_folder_key+0(3).
+        lv_folder_id-objyr = lv_folder_key+3(2).
+        lv_folder_id-objno = lv_folder_key+5(12).
+
+*---------------------------------------------------------------------*
+* SOODK Dokument
+*---------------------------------------------------------------------*
+        lv_object_id-objtp = lv_doc_key+0(3).
+        lv_object_id-objyr = lv_doc_key+3(2).
+        lv_object_id-objno = lv_doc_key+5(12).
+
+*---------------------------------------------------------------------*
+* SAPoffice-Dokument lesen
+*---------------------------------------------------------------------*
+        CALL FUNCTION 'SO_OBJECT_READ'
+          EXPORTING
+            folder_id                  = lv_folder_id
+            object_id                  = lv_object_id
+          IMPORTING
+            object_hd_display          = ls_object_hd
+          TABLES
+            objcont                    = lt_objcont
+            objhead                    = lt_objhead
+          EXCEPTIONS
+            active_user_not_exist      = 1
+            communication_failure      = 2
+            component_not_available    = 3
+            folder_not_exist           = 4
+            folder_no_authorization    = 5
+            object_not_exist           = 6
+            object_no_authorization    = 7
+            operation_no_authorization = 8
+            owner_not_exist            = 9
+            parameter_error            = 10
+            substitute_not_active      = 11
+            substitute_not_defined     = 12
+            system_failure             = 13
+            x_error                    = 14
+            OTHERS                     = 15.
+
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+
+*---------------------------------------------------------------------*
+* Dateiname aus OBJHEAD bestimmen
+*---------------------------------------------------------------------*
+        LOOP AT lt_objhead INTO ls_objhead.
+
+          IF ls_objhead-line CS '&SO_FILENAME='.
+
+            lv_filename = ls_objhead-line.
+
+            REPLACE FIRST OCCURRENCE OF '&SO_FILENAME='
+              IN lv_filename
+              WITH space.
+
+            CONDENSE lv_filename.
+
+            ls_attachment-filename = lv_filename.
+
+            FIND REGEX '\.([^.]+)$'
+              IN lv_filename
+              SUBMATCHES lv_ext.
+
+            IF sy-subrc = 0.
+              ls_attachment-file_ext = lv_ext.
+            ENDIF.
+
+          ENDIF.
+
+        ENDLOOP.
+
+*---------------------------------------------------------------------*
+* Fallback Dateiname
+*---------------------------------------------------------------------*
+        IF ls_attachment-filename IS INITIAL.
+
+          ls_attachment-filename = ls_sood-objdes.
+
+        ENDIF.
+
+*---------------------------------------------------------------------*
+* Inhalt SOLI -> SOLIX
+*
+* Achtung:
+* SO_OBJECT_READ liefert OBJCONT als SOLI.
+*---------------------------------------------------------------------*
+        CALL FUNCTION 'SCMS_TEXT_TO_BINARY'
+*      EXPORTING
+*        input_length  = ls_object_hd-objlen
+          IMPORTING
+            output_length = lv_output_length
+          TABLES
+            text_tab      = lt_objcont
+            binary_tab    = lt_solix.
+
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+
+*---------------------------------------------------------------------*
+* SOLIX -> XSTRING
+*---------------------------------------------------------------------*
+        CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
+          EXPORTING
+            input_length = lv_output_length
+          IMPORTING
+            buffer       = lv_xstring
+          TABLES
+            binary_tab   = lt_solix
+          EXCEPTIONS
+            failed       = 1
+            OTHERS       = 2.
+
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+
+*---------------------------------------------------------------------*
+* Ergebnis
+*---------------------------------------------------------------------*
+        ls_attachment-file_size    = lv_output_length.
+        ls_attachment-content_hex  = lt_solix.
+        ls_attachment-content_xstr = lv_xstring.
+
+        APPEND ls_attachment TO gt_attachments.
+
+      ENDLOOP.
+    ENDLOOP.
+
+
+      DATA:
+      lx        TYPE xstring,
+      ldo_data  TYPE REF TO data,
+      ls_cloned TYPE /stb99/tables.
+
+
+    IF gt_attachments IS NOT INITIAL.
+      EXPORT p1 = gt_attachments TO DATA BUFFER lx.
+      APPEND lx TO at_xstrtab.
+      ls_cloned-index = sy-tabix.
+      ls_cloned-mode = 'G'.
+      ls_cloned-tabname = 'GOS Dokumente'.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
 
 
 

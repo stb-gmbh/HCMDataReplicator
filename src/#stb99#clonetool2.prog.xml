@@ -477,6 +477,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_GOS</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_KRANK</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>

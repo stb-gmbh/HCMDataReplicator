@@ -170,18 +170,20 @@ FORM write_data_to_tables .
   "Schreiben der übermittelten Daten aus dem Produktivsystem
   LOOP AT lt_cloned INTO ls_cloned. "Tabellennamen
 
-    CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
-    ASSIGN ldo_data->* TO <lt_itab>.
-
-    READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
-
-    REFRESH <lt_itab>.
 
 
     CASE ls_cloned-mode.
+      WHEN 'G'. "GOS
+        PERFORM write_gos.
       WHEN 'M'.
         PERFORM read_dynamic_table.
       WHEN OTHERS.
+    "interne Tabelle erzeugen
+    CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
+    ASSIGN ldo_data->* TO <lt_itab>.
+    READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
+    REFRESH <lt_itab>.
+
         "Bei Strukturunterschied
         TRY.
             IMPORT p1 = <lt_itab> FROM DATA BUFFER lx. "itab Tabelle füllen dekodiert aus lx
@@ -578,5 +580,14 @@ FORM show_result .
       MESSAGE lx_salv->get_text( ) TYPE 'I'.
 
   ENDTRY.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  WRITE_GOS
+*&---------------------------------------------------------------------*
+FORM write_gos .
+
+              PERFORM add_result
+                USING ls_cloned-tabname 'G' l_lines l_size sy-dbcnt 0 'geklont. Sätze gelöscht'.
 
 ENDFORM.

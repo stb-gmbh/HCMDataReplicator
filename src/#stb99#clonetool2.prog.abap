@@ -74,7 +74,6 @@ START-OF-SELECTION.
     PERFORM delete_target_pernr.
   ENDIF.
 
-
   PERFORM write_data_to_tables.
   PERFORM show_result.
 
@@ -132,6 +131,8 @@ FORM overwrite_customizing_with_sel .
   IF p_betri IS NOT INITIAL. p_custom-betri       = p_betri. ENDIF.
   IF p_beitr IS NOT INITIAL. p_custom-beitr       = p_beitr. ENDIF.
   IF p_agkto IS NOT INITIAL. p_custom-agkto       = p_agkto. ENDIF.
+  IF p_t596m IS NOT INITIAL. p_custom-t596m       = p_t596m. ENDIF.
+  IF p_gos IS NOT INITIAL. p_custom-gos       = p_agkto. ENDIF.
 
   p_custom-destination = p_dest.
 
@@ -155,6 +156,12 @@ FORM read_dynamic_table .
 
   FIELD-SYMBOLS:
     <lt_source> TYPE table.
+
+    "interne Tabelle erzeugen
+    CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
+    ASSIGN ldo_data->* TO <lt_itab>.
+    READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
+    REFRESH <lt_itab>.
 
   READ TABLE lt_xstring
     INTO lx

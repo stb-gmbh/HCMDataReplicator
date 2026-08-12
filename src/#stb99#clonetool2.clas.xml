@@ -188,6 +188,12 @@
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>/STB99/CLONETOOL2</CLSNAME>
+     <CMPNAME>READ_TABLE_GOS</CMPNAME>
+     <LANGU>D</LANGU>
+     <DESCRIPT>elektronische Übermittlung von Betriebsdaten an die RV</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/STB99/CLONETOOL2</CLSNAME>
      <CMPNAME>READ_TABLE_LSTA</CMPNAME>
      <LANGU>D</LANGU>
      <DESCRIPT>Lohnsteuer-Anmeldung</DESCRIPT>
