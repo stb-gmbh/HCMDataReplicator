@@ -642,6 +642,7 @@ FORM write_gos .
 
   "import binär
   TRY.
+      READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
       IMPORT p1 = gt_attachments FROM DATA BUFFER lx. "itab Tabelle füllen dekodiert aus lx
     CATCH cx_root.
       PERFORM add_result
