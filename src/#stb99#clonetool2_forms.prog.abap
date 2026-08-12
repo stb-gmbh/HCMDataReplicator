@@ -891,12 +891,12 @@ FORM write_gos .
     ENDIF.
 
 
-    WRITE: / 'Anlage angelegt:',
-             lv_filename,
-             'PERNR:',
-             ls_attachment-pernr,
-             'DOC_ID:',
-             ls_docinfo-doc_id.
+*    WRITE: / 'Anlage angelegt:',
+*             lv_filename,
+*             'PERNR:',
+*             ls_attachment-pernr,
+*             'DOC_ID:',
+*             ls_docinfo-doc_id.
 
   ENDLOOP.
 

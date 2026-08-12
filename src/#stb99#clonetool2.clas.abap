@@ -22,6 +22,9 @@ public section.
       !CLONED_TABLES type /STB99/TABLES_T
       !XSTRTAB type /STB99/XTAB .
   methods CONSTRUCTOR .
+  methods READ_FIELDS_WITH_PERNR
+    importing
+      !TABNAME type TABNAME .
   methods READ_TABLES_ADDITIONAL .
   methods READ_TABLES_CLUSTER
     exceptions
@@ -43,16 +46,13 @@ public section.
     importing
       !TABNAME type TABNAME .
   methods READ_TABLE_EUBP .
-  methods READ_TABLE_SVZUSATZ .
+  methods READ_TABLE_GOS .
   methods READ_TABLE_LSTA .
   methods READ_TABLE_RENTENUEBERSICHT .
+  methods READ_TABLE_SVZUSATZ .
   methods READ_TABLE_WITH_PERNR
     importing
       !TABNAME type TABNAME .
-  methods READ_FIELDS_WITH_PERNR
-    importing
-      !TABNAME type TABNAME .
-  methods READ_TABLE_GOS .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -1994,9 +1994,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   METHOD read_table_gos.
     CHECK me->customizing-gos IS NOT INITIAL.
 
-*---------------------------------------------------------------------*
-* Typen
-*---------------------------------------------------------------------*
     TYPES:
       BEGIN OF ty_attachment,
         pernr        TYPE pernr_d,
