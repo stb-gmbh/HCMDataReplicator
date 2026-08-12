@@ -2036,8 +2036,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
       ls_sood          TYPE sood,
 
-      lv_pernr         TYPE pernr_d,
-
       lv_len           TYPE i,
       lv_offset        TYPE i,
 
@@ -2075,7 +2073,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         FROM srgbtbrel
         INTO TABLE lt_relations
         WHERE typeid_a = 'BUS1065'
-          AND instid_a = lv_pernr
+          AND instid_a = <ls_pernr>-low
           AND catid_a  = 'BO'
           AND reltype  = 'ATTA'
           AND typeid_b = 'MESSAGE'.
