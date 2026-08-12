@@ -2063,6 +2063,14 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
       lv_output_length TYPE i.
 
+    DATA:
+      ls_document_data  TYPE sofolenti1,
+      lt_object_header  TYPE STANDARD TABLE OF solisti1,
+      lt_object_content TYPE STANDARD TABLE OF solisti1,
+      lt_contents_hex   TYPE STANDARD TABLE OF solix,
+      lv_document_id    TYPE sofolenti1-doc_id,
+      lv_size           TYPE i.
+
 
     LOOP AT at_pernr ASSIGNING FIELD-SYMBOL(<ls_pernr>).
 
@@ -2181,38 +2189,51 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         lv_object_id-objyr = lv_doc_key+3(2).
         lv_object_id-objno = lv_doc_key+5(12).
 
+        CLEAR:
+          ls_document_data,
+          lt_object_header,
+          lt_object_content,
+          lt_contents_hex,
+          lv_document_id,
+          lv_xstring,
+          lv_size.
+
 *---------------------------------------------------------------------*
-* SAPoffice-Dokument lesen
+* INSTID_B ist bereits die komplette SAPoffice-Dokument-ID
+*
+* Beispiel:
+* FOL2600000000024EXT5100000000033
 *---------------------------------------------------------------------*
-        CALL FUNCTION 'SO_OBJECT_READ'
+        lv_document_id = ls_relation-instid_b.
+
+*---------------------------------------------------------------------*
+* SAPoffice-Dokument BINÄR lesen
+*---------------------------------------------------------------------*
+        CALL FUNCTION 'SO_DOCUMENT_READ_API1'
           EXPORTING
-            folder_id                  = lv_folder_id
-            object_id                  = lv_object_id
+            document_id                = lv_document_id
           IMPORTING
-            object_hd_display          = ls_object_hd
+            document_data              = ls_document_data
           TABLES
-            objcont                    = lt_objcont
-            objhead                    = lt_objhead
+            object_header              = lt_object_header
+            object_content             = lt_object_content
+            contents_hex               = lt_contents_hex
           EXCEPTIONS
-            active_user_not_exist      = 1
-            communication_failure      = 2
-            component_not_available    = 3
-            folder_not_exist           = 4
-            folder_no_authorization    = 5
-            object_not_exist           = 6
-            object_no_authorization    = 7
-            operation_no_authorization = 8
-            owner_not_exist            = 9
-            parameter_error            = 10
-            substitute_not_active      = 11
-            substitute_not_defined     = 12
-            system_failure             = 13
-            x_error                    = 14
-            OTHERS                     = 15.
+            document_id_not_exist      = 1
+            operation_no_authorization = 2
+            x_error                    = 3
+            OTHERS                     = 4.
 
         IF sy-subrc <> 0.
+          WRITE: / 'SO_DOCUMENT_READ_API1 Fehler:',
+                   sy-subrc,
+                   ls_relation-instid_b.
           CONTINUE.
         ENDIF.
+
+
+
+
 
 *---------------------------------------------------------------------*
 * Dateiname aus OBJHEAD bestimmen
@@ -2251,49 +2272,31 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           ls_attachment-filename = ls_sood-objdes.
 
         ENDIF.
-
-*---------------------------------------------------------------------*
-* Inhalt SOLI -> SOLIX
-*
-* Achtung:
-* SO_OBJECT_READ liefert OBJCONT als SOLI.
-*---------------------------------------------------------------------*
-        CALL FUNCTION 'SCMS_TEXT_TO_BINARY'
-*      EXPORTING
-*        input_length  = ls_object_hd-objlen
-          IMPORTING
-            output_length = lv_output_length
-          TABLES
-            text_tab      = lt_objcont
-            binary_tab    = lt_solix.
-
-        IF sy-subrc <> 0.
-          CONTINUE.
-        ENDIF.
-
 *---------------------------------------------------------------------*
 * SOLIX -> XSTRING
 *---------------------------------------------------------------------*
         CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
           EXPORTING
-            input_length = lv_output_length
+            input_length = lv_size
           IMPORTING
             buffer       = lv_xstring
           TABLES
-            binary_tab   = lt_solix
+            binary_tab   = lt_contents_hex
           EXCEPTIONS
             failed       = 1
             OTHERS       = 2.
 
         IF sy-subrc <> 0.
+          WRITE: / 'SCMS_BINARY_TO_XSTRING Fehler:',
+                   sy-subrc,
+                   ls_relation-instid_b.
           CONTINUE.
         ENDIF.
-
 *---------------------------------------------------------------------*
 * Ergebnis
 *---------------------------------------------------------------------*
         ls_attachment-file_size    = lv_output_length.
-        ls_attachment-content_hex  = lt_solix.
+        ls_attachment-content_hex  = lt_contents_hex.
         ls_attachment-content_xstr = lv_xstring.
 
         APPEND ls_attachment TO gt_attachments.
@@ -2302,7 +2305,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ENDLOOP.
 
 
-      DATA:
+    DATA:
       lx        TYPE xstring,
       ldo_data  TYPE REF TO data,
       ls_cloned TYPE /stb99/tables.
