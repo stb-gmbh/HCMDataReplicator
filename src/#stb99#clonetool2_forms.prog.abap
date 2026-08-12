@@ -175,14 +175,15 @@ FORM write_data_to_tables .
     CASE ls_cloned-mode.
       WHEN 'G'. "GOS
         PERFORM write_gos.
+        CONTINUE.
       WHEN 'M'.
         PERFORM read_dynamic_table.
       WHEN OTHERS.
-    "interne Tabelle erzeugen
-    CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
-    ASSIGN ldo_data->* TO <lt_itab>.
-    READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
-    REFRESH <lt_itab>.
+        "interne Tabelle erzeugen
+        CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
+        ASSIGN ldo_data->* TO <lt_itab>.
+        READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
+        REFRESH <lt_itab>.
 
         "Bei Strukturunterschied
         TRY.
@@ -587,7 +588,7 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM write_gos .
 
-              PERFORM add_result
-                USING ls_cloned-tabname 'G' l_lines l_size sy-dbcnt 0 'geklont. Sätze gelöscht'.
+  PERFORM add_result
+    USING ls_cloned-tabname 'G' l_lines l_size sy-dbcnt 0 'geklont. Sätze gelöscht'.
 
 ENDFORM.
