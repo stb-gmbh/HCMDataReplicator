@@ -811,7 +811,7 @@ FORM write_gos .
       EXPORTING
         folder_id                  = ls_folder_id
         document_data              = ls_docdata
-        document_type              = ls_attachment-file_ext
+        document_type              = lv_doc_type
       IMPORTING
         document_info              = ls_docinfo
       TABLES
