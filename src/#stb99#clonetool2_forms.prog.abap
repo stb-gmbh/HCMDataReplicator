@@ -628,7 +628,7 @@ FORM write_gos .
     ls_folder_id  TYPE soodk,
     ls_docdata    TYPE sodocchgi1,
     ls_docinfo    TYPE sofolenti1,
-    lv_doc_type  TYPE so_obj_tp,
+    lv_doc_type   TYPE so_obj_tp,
     lt_hex        TYPE solix_tab,
     ls_obj_a      TYPE borident,
     ls_obj_b      TYPE borident,
@@ -889,7 +889,6 @@ FORM write_gos .
       CONTINUE.
 
     ENDIF.
-
 
 *    WRITE: / 'Anlage angelegt:',
 *             lv_filename,
