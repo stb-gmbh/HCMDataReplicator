@@ -636,9 +636,9 @@ FORM write_gos .
     lv_size       TYPE i,
     lv_filename   TYPE string,
     lv_descr      TYPE so_obj_des,
-    lv_obj_name   TYPE so_obj_nam.
-
-
+    lv_obj_name   TYPE so_obj_nam,
+    lt_objhead    TYPE STANDARD TABLE OF soli,
+    ls_objhead    TYPE soli.
 
   "import binär
   TRY.
@@ -652,17 +652,17 @@ FORM write_gos .
   DESCRIBE TABLE gt_attachments LINES l_lines. "Datensätze
 
 
-LOOP AT gt_attachments INTO ls_attachment.
+  LOOP AT gt_attachments INTO ls_attachment.
 
 *--------------------------------------------------------------------*
 * Personalnummer normalisieren
 *--------------------------------------------------------------------*
 
-  CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
-    EXPORTING
-      input  = ls_attachment-pernr
-    IMPORTING
-      output = ls_attachment-pernr.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+      EXPORTING
+        input  = ls_attachment-pernr
+      IMPORTING
+        output = ls_attachment-pernr.
 
 
 *--------------------------------------------------------------------*
@@ -670,18 +670,18 @@ LOOP AT gt_attachments INTO ls_attachment.
 *
 * Region B = Business Documents
 *--------------------------------------------------------------------*
-  CALL FUNCTION 'SO_FOLDER_ROOT_ID_GET'
-    EXPORTING
-      region    = 'B'
-    IMPORTING
-      folder_id = ls_folder_id
-    EXCEPTIONS
-      OTHERS    = 1.
+    CALL FUNCTION 'SO_FOLDER_ROOT_ID_GET'
+      EXPORTING
+        region    = 'B'
+      IMPORTING
+        folder_id = ls_folder_id
+      EXCEPTIONS
+        OTHERS    = 1.
 
-  IF sy-subrc <> 0.
-    WRITE: / 'Fehler bei SO_FOLDER_ROOT_ID_GET:', sy-subrc.
-    RETURN.
-  ENDIF.
+    IF sy-subrc <> 0.
+      WRITE: / 'Fehler bei SO_FOLDER_ROOT_ID_GET:', sy-subrc.
+      RETURN.
+    ENDIF.
 
 
 *--------------------------------------------------------------------*
@@ -787,6 +787,22 @@ LOOP AT gt_attachments INTO ls_attachment.
     ls_docdata-doc_size  = lv_size.
 
 
+    TRANSLATE ls_attachment-file_ext TO UPPER CASE.
+
+
+*--------------------------------------------------------------------*
+* SAPoffice Header
+*--------------------------------------------------------------------*
+    CLEAR ls_objhead.
+    REFRESH: lt_objhead.
+
+    CONCATENATE '&SO_FILENAME='
+                lv_filename
+           INTO ls_objhead-line.
+
+    APPEND ls_objhead TO lt_objhead.
+
+
 *--------------------------------------------------------------------*
 * SAPoffice-Dokument erzeugen
 *--------------------------------------------------------------------*
@@ -794,10 +810,11 @@ LOOP AT gt_attachments INTO ls_attachment.
       EXPORTING
         folder_id                  = ls_folder_id
         document_data              = ls_docdata
-        document_type              = 'EXT'
+        document_type              = ls_attachment-file_ext
       IMPORTING
         document_info              = ls_docinfo
       TABLES
+        object_header              = lt_objhead
         contents_hex               = lt_hex
       EXCEPTIONS
         folder_not_exist           = 1
