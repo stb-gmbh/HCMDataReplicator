@@ -588,7 +588,300 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM write_gos .
 
+
+*---------------------------------------------------------------------*
+* Typen
+*---------------------------------------------------------------------*
+  TYPES:
+    BEGIN OF ty_attachment,
+      pernr        TYPE pernr_d,
+      instid_a     TYPE srgbtbrel-instid_a,
+      typeid_a     TYPE srgbtbrel-typeid_a,
+      instid_b     TYPE srgbtbrel-instid_b,
+      typeid_b     TYPE srgbtbrel-typeid_b,
+      reltype      TYPE srgbtbrel-reltype,
+
+      objtp        TYPE sood-objtp,
+      objyr        TYPE sood-objyr,
+      objno        TYPE sood-objno,
+      objdes       TYPE sood-objdes,
+
+      filename     TYPE string,
+      file_ext     TYPE string,
+      file_size    TYPE i,
+
+      content_hex  TYPE solix_tab,
+      content_xstr TYPE xstring,
+    END OF ty_attachment,
+
+    tt_attachment TYPE STANDARD TABLE OF ty_attachment
+                  WITH DEFAULT KEY.
+
+*---------------------------------------------------------------------*
+* Daten
+*---------------------------------------------------------------------*
+  DATA:
+    gt_attachments TYPE tt_attachment.
+
+  DATA:
+    ls_attachment TYPE ty_attachment,
+    ls_folder_id  TYPE soodk,
+    ls_docdata    TYPE sodocchgi1,
+    ls_docinfo    TYPE sofolenti1,
+    lt_hex        TYPE solix_tab,
+    ls_obj_a      TYPE borident,
+    ls_obj_b      TYPE borident,
+    ls_binrel     TYPE gbinrel,
+    lt_binatt     TYPE STANDARD TABLE OF brelattr,
+    lv_size       TYPE i,
+    lv_filename   TYPE string,
+    lv_descr      TYPE so_obj_des,
+    lv_obj_name   TYPE so_obj_nam.
+
+
+
+  "import binär
+  TRY.
+      IMPORT p1 = gt_attachments FROM DATA BUFFER lx. "itab Tabelle füllen dekodiert aus lx
+    CATCH cx_root.
+      PERFORM add_result
+        USING ls_cloned-tabname 'G' l_lines l_size sy-dbcnt 2 'GOS konnte nicht importiert werden.' .
+
+  ENDTRY.
+  DESCRIBE TABLE gt_attachments LINES l_lines. "Datensätze
+
+
+LOOP AT gt_attachments INTO ls_attachment.
+
+*--------------------------------------------------------------------*
+* Personalnummer normalisieren
+*--------------------------------------------------------------------*
+
+  CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+    EXPORTING
+      input  = ls_attachment-pernr
+    IMPORTING
+      output = ls_attachment-pernr.
+
+
+*--------------------------------------------------------------------*
+* SAPoffice Root-Folder holen
+*
+* Region B = Business Documents
+*--------------------------------------------------------------------*
+  CALL FUNCTION 'SO_FOLDER_ROOT_ID_GET'
+    EXPORTING
+      region    = 'B'
+    IMPORTING
+      folder_id = ls_folder_id
+    EXCEPTIONS
+      OTHERS    = 1.
+
+  IF sy-subrc <> 0.
+    WRITE: / 'Fehler bei SO_FOLDER_ROOT_ID_GET:', sy-subrc.
+    RETURN.
+  ENDIF.
+
+
+*--------------------------------------------------------------------*
+* Alle übertragenen Anlagen anlegen
+*--------------------------------------------------------------------*
+    CLEAR:
+      ls_docdata,
+      ls_docinfo,
+      lt_hex,
+      ls_obj_a,
+      ls_obj_b,
+      ls_binrel,
+      lt_binatt,
+      lv_size,
+      lv_filename,
+      lv_descr,
+      lv_obj_name.
+
+
+*--------------------------------------------------------------------*
+* Binärdaten
+*--------------------------------------------------------------------*
+    IF ls_attachment-content_hex IS NOT INITIAL.
+
+      lt_hex = ls_attachment-content_hex.
+
+      lv_size = ls_attachment-file_size.
+
+    ELSEIF ls_attachment-content_xstr IS NOT INITIAL.
+
+*--------------------------------------------------------------------*
+* XSTRING -> SOLIX
+*--------------------------------------------------------------------*
+      CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+        EXPORTING
+          buffer        = ls_attachment-content_xstr
+        IMPORTING
+          output_length = lv_size
+        TABLES
+          binary_tab    = lt_hex.
+
+      IF sy-subrc <> 0.
+        WRITE: / 'Fehler XSTRING -> SOLIX bei',
+                 ls_attachment-filename.
+        CONTINUE.
+      ENDIF.
+
+    ELSE.
+
+      WRITE: / 'Kein Inhalt vorhanden:',
+               ls_attachment-filename.
+
+      CONTINUE.
+
+    ENDIF.
+
+
+*--------------------------------------------------------------------*
+* Dateiname
+*--------------------------------------------------------------------*
+    lv_filename = ls_attachment-filename.
+
+    IF lv_filename IS INITIAL.
+
+      lv_filename = ls_attachment-objdes.
+
+      IF lv_filename IS INITIAL.
+        lv_filename = 'Attachment'.
+      ENDIF.
+
+      IF ls_attachment-file_ext IS NOT INITIAL.
+        CONCATENATE lv_filename
+                    '.'
+                    ls_attachment-file_ext
+               INTO lv_filename.
+      ENDIF.
+
+    ENDIF.
+
+
+*--------------------------------------------------------------------*
+* Beschreibung
+*--------------------------------------------------------------------*
+    lv_descr = ls_attachment-objdes.
+
+    IF lv_descr IS INITIAL.
+      lv_descr = lv_filename.
+    ENDIF.
+
+
+*--------------------------------------------------------------------*
+* OBJ_NAME hat eine relativ kurze SAPoffice-Länge.
+* Deshalb nicht blind kompletten Dateinamen hineinpacken.
+*--------------------------------------------------------------------*
+    lv_obj_name = lv_filename.
+
+
+*--------------------------------------------------------------------*
+* SAPoffice Dokumentdaten
+*--------------------------------------------------------------------*
+    ls_docdata-obj_name  = lv_obj_name.
+    ls_docdata-obj_descr = lv_descr.
+    ls_docdata-doc_size  = lv_size.
+
+
+*--------------------------------------------------------------------*
+* SAPoffice-Dokument erzeugen
+*--------------------------------------------------------------------*
+    CALL FUNCTION 'SO_DOCUMENT_INSERT_API1'
+      EXPORTING
+        folder_id                  = ls_folder_id
+        document_data              = ls_docdata
+        document_type              = 'EXT'
+      IMPORTING
+        document_info              = ls_docinfo
+      TABLES
+        contents_hex               = lt_hex
+      EXCEPTIONS
+        folder_not_exist           = 1
+        document_type_not_exist    = 2
+        operation_no_authorization = 3
+        parameter_error            = 4
+        x_error                    = 5
+        enqueue_error              = 6
+        OTHERS                     = 7.
+
+    IF sy-subrc <> 0.
+
+      WRITE: / 'Fehler SO_DOCUMENT_INSERT_API1:',
+               sy-subrc,
+               lv_filename.
+
+      CONTINUE.
+
+    ENDIF.
+
+
+*--------------------------------------------------------------------*
+* Business Object A:
+*
+* PA30 Mitarbeiter = BUS1065
+*--------------------------------------------------------------------*
+    ls_obj_a-objtype = 'BUS1065'.
+    ls_obj_a-objkey  = ls_attachment-pernr.
+
+
+*--------------------------------------------------------------------*
+* Business Object B:
+*
+* Neu angelegtes SAPoffice-Dokument
+*
+* DOCUMENT_INFO-DOC_ID liefert den kompletten Schlüssel:
+*
+* z.B.
+* FOL2600000000024EXT5100000000033
+*--------------------------------------------------------------------*
+    ls_obj_b-objtype = 'MESSAGE'.
+    ls_obj_b-objkey  = ls_docinfo-doc_id.
+
+
+*--------------------------------------------------------------------*
+* GOS Beziehung erzeugen
+*
+* ATTA = Attachment
+*--------------------------------------------------------------------*
+    CALL FUNCTION 'BINARY_RELATION_CREATE_COMMIT'
+      EXPORTING
+        obj_rolea      = ls_obj_a
+        obj_roleb      = ls_obj_b
+        relationtype   = 'ATTA'
+      IMPORTING
+        binrel         = ls_binrel
+      TABLES
+        binrel_attrib  = lt_binatt
+      EXCEPTIONS
+        no_model       = 1
+        internal_error = 2
+        unknown        = 3
+        OTHERS         = 4.
+
+    IF sy-subrc <> 0.
+
+      WRITE: / 'Fehler BINARY_RELATION_CREATE_COMMIT:',
+               sy-subrc,
+               lv_filename.
+
+      CONTINUE.
+
+    ENDIF.
+
+
+    WRITE: / 'Anlage angelegt:',
+             lv_filename,
+             'PERNR:',
+             ls_attachment-pernr,
+             'DOC_ID:',
+             ls_docinfo-doc_id.
+
+  ENDLOOP.
+
   PERFORM add_result
-    USING ls_cloned-tabname 'G' l_lines l_size sy-dbcnt 0 'geklont. Sätze gelöscht'.
+    USING ls_cloned-tabname 'G' l_lines 0 0 0 'GOS angelegt'.
 
 ENDFORM.
