@@ -2052,8 +2052,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ls_object_hd     TYPE sood2,
 
       lt_objcont       TYPE STANDARD TABLE OF soli,
-      lt_objhead       TYPE STANDARD TABLE OF soli,
-      ls_objhead       TYPE soli,
 
       lt_solix         TYPE solix_tab,
 
@@ -2066,6 +2064,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     DATA:
       ls_document_data  TYPE sofolenti1,
       lt_object_header  TYPE STANDARD TABLE OF solisti1,
+      ls_object_header  TYPE solisti1,
       lt_object_content TYPE STANDARD TABLE OF solisti1,
       lt_contents_hex   TYPE STANDARD TABLE OF solix,
       lv_document_id    TYPE sofolenti1-doc_id,
@@ -2102,7 +2101,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           lv_object_id,
           ls_object_hd,
           lt_objcont,
-          lt_objhead,
+          lt_object_header,
           lt_solix,
           lv_xstring,
           lv_filename,
@@ -2238,11 +2237,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 *---------------------------------------------------------------------*
 * Dateiname aus OBJHEAD bestimmen
 *---------------------------------------------------------------------*
-        LOOP AT lt_objhead INTO ls_objhead.
+        LOOP AT lt_object_header INTO ls_object_header.
 
-          IF ls_objhead-line CS '&SO_FILENAME='.
+          IF ls_object_header-line CS '&SO_FILENAME='.
 
-            lv_filename = ls_objhead-line.
+            lv_filename = ls_object_header-line.
 
             REPLACE FIRST OCCURRENCE OF '&SO_FILENAME='
               IN lv_filename
