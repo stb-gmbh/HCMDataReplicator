@@ -628,6 +628,7 @@ FORM write_gos .
     ls_folder_id  TYPE soodk,
     ls_docdata    TYPE sodocchgi1,
     ls_docinfo    TYPE sofolenti1,
+    lv_doc_type  TYPE so_obj_tp,
     lt_hex        TYPE solix_tab,
     ls_obj_a      TYPE borident,
     ls_obj_b      TYPE borident,
@@ -786,8 +787,8 @@ FORM write_gos .
     ls_docdata-obj_descr = lv_descr.
     ls_docdata-doc_size  = lv_size.
 
-
-    TRANSLATE ls_attachment-file_ext TO UPPER CASE.
+    lv_doc_type = ls_attachment-file_ext.
+    TRANSLATE   lv_doc_type  TO UPPER CASE.
 
 
 *--------------------------------------------------------------------*
