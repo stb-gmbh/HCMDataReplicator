@@ -1871,8 +1871,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_fields_with_pernr EXPORTING tabname = 'PTRV_HEAD'.
     CALL METHOD me->read_fields_with_pernr EXPORTING tabname = 'PTRV_PERIO'.
 
-
-
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_B'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_HINZ_WERB_S'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'FITV_NOT_CH_TR'.
@@ -1893,6 +1891,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_TRIP_CHAIN'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_VATDETAIL'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PTRV_WAF_CONFLCT'.
+
+    CALL METHOD me->read_table_complete EXPORTING  tabname = 'PTRV_DOC_HD'.
+    CALL METHOD me->read_table_complete EXPORTING  tabname = 'PTRV_DOC_IT'.
+    CALL METHOD me->read_table_complete EXPORTING  tabname = 'PTRV_DOC_MESS'.
+    CALL METHOD me->read_table_complete EXPORTING  tabname = 'PTRV_DOC_TAX'.
 
   ENDMETHOD.
 
