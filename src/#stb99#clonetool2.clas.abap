@@ -984,6 +984,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_tables_cluster.
 
+    CHECK me->customizing-calc IS NOT INITIAL.
+
     DATA:
       lx        TYPE xstring,
       ldo_data  TYPE REF TO data,

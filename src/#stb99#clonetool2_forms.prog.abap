@@ -652,6 +652,8 @@ FORM write_gos .
   ENDTRY.
   DESCRIBE TABLE gt_attachments LINES l_lines. "Datensätze
 
+  "Schreiben
+    l_size = xstrlen( lx ) / 1024.
 
   LOOP AT gt_attachments INTO ls_attachment.
 
@@ -900,6 +902,6 @@ FORM write_gos .
   ENDLOOP.
 
   PERFORM add_result
-    USING ls_cloned-tabname 'G' l_lines 0 0 0 'GOS angelegt'.
+    USING ls_cloned-tabname 'G' l_lines l_size 0 0 'GOS angelegt'.
 
 ENDFORM.
