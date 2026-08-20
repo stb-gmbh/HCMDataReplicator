@@ -20,7 +20,9 @@ public section.
     changing
       !S_PERNR type /STB99/RANGE_PERNR_T
       !CLONED_TABLES type /STB99/TABLES_T
-      !XSTRTAB type /STB99/XTAB .
+      !XSTRTAB type /STB99/XTAB
+    exceptions
+      NOTHING_SELECTED .
   methods CONSTRUCTOR .
   methods READ_FIELDS_WITH_PERNR
     importing
@@ -76,6 +78,7 @@ private section.
   methods READ_MELD_RBM .
   methods READ_MELD_ZS .
   methods READ_TEMP_T596M .
+  methods READ_MELD_DABPV .
 ENDCLASS.
 
 
@@ -109,6 +112,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ls_pernr-option = 'EQ'.
       APPEND ls_pernr TO at_pernr.
     ENDSELECT.
+
+    if at_pernr IS INITIAL.
+      raise nothing_selected.
+    endif.
 
     "Parameter von Quellsystem (welche Verfahren etc.)
     at_infty[] = gr_infty[].
@@ -450,6 +457,27 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD READ_MELD_DABPV.
+    CONSTANTS: gui_tabname TYPE tabname VALUE 'P01_DBP_STAT'.
+
+    CHECK me->customizing-DaBPV IS NOT INITIAL.
+
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
+
+    CLEAR add_guid_tabs[].
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_DBP_HINWCODE'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_DBP_HIST'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_DBP_KINDER'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_DBP_NOTIFDAT'.
+
+    CALL METHOD me->read_tables_meld_with_guid
+      EXPORTING
+        tab_guid = gui_tabname
+        add_tab  = add_guid_tabs.
+
+  ENDMETHOD.
+
+
   METHOD read_meld_deuev.
     CHECK me->customizing-deuv IS NOT INITIAL.
 
@@ -504,6 +532,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD read_meld_eau.
     CONSTANTS: gui_tabname TYPE tabname VALUE 'P01_EAU_STAT'.
+
+    CHECK me->customizing-eau IS NOT INITIAL.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
 
@@ -884,6 +914,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_zs.
+    CHECK me->customizing-zs IS NOT INITIAL.
+
     CONSTANTS: gui_tabname TYPE tabname VALUE 'P01ZS_STAT'.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
@@ -1687,8 +1719,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CREATE DATA ldo_data TYPE TABLE OF pcalac.
     ASSIGN ldo_data->* TO <lt_itab>.
 
-    SELECT * FROM pcalac INTO TABLE <lt_itab>
-      WHERE pernr IN at_pernr.
+    SELECT * FROM pcalac INTO TABLE <lt_itab>.
+*      WHERE pernr IN at_pernr.
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -1701,8 +1733,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CREATE DATA ldo_data TYPE TABLE OF ppoix.
     ASSIGN ldo_data->* TO <lt_itab>.
 
-    SELECT * FROM ppoix INTO TABLE <lt_itab>
-      WHERE pernr IN at_pernr.
+    SELECT * FROM ppoix INTO TABLE <lt_itab>.
+*      WHERE pernr IN at_pernr.
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -1715,8 +1747,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CREATE DATA ldo_data TYPE TABLE OF ppopx.
     ASSIGN ldo_data->* TO <lt_itab>.
 
-    SELECT * FROM ppopx INTO TABLE <lt_itab>
-      WHERE pernr IN at_pernr.
+    SELECT * FROM ppopx INTO TABLE <lt_itab>.
+*      WHERE pernr IN at_pernr.
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.

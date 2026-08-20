@@ -131,6 +131,7 @@ FORM overwrite_customizing_with_sel .
   IF p_betri IS NOT INITIAL. p_custom-betri = p_betri. ENDIF.
   IF p_beitr IS NOT INITIAL. p_custom-beitr = p_beitr. ENDIF.
   IF p_agkto IS NOT INITIAL. p_custom-agkto = p_agkto. ENDIF.
+  IF p_DaBPV IS NOT INITIAL. p_custom-DaBPV = p_DaBPV. ENDIF.
   IF p_t596m IS NOT INITIAL. p_custom-t596m = p_t596m. ENDIF.
   IF p_gos   IS NOT INITIAL. p_custom-gos   = p_gos.   ENDIF.
   p_custom-destination = p_dest.

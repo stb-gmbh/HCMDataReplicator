@@ -402,6 +402,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_DABPV</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_DEL</KEY>
      <ENTRY>Löschen Zielpersonalnummern</ENTRY>
      <LENGTH>35</LENGTH>
