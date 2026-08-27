@@ -1,7 +1,6 @@
 *&---------------------------------------------------------------------*
 *&  Include           /STB99/CLONETOOL2_S
 *&---------------------------------------------------------------------*
-
 *----------------------------------------------------------------------*
 * Selektionsbild - Personalnummer
 *----------------------------------------------------------------------*
@@ -51,6 +50,11 @@ SELECTION-SCREEN END OF SCREEN 020.
 *----------------------------------------------------------------------*
 SELECTION-SCREEN BEGIN OF SCREEN 030 AS SUBSCREEN.
 *----------------------------------------------------------------------*
+SELECTION-SCREEN BEGIN OF LINE.
+SELECTION-SCREEN PUSHBUTTON 1(6) btn30_on  USER-COMMAND on30.
+SELECTION-SCREEN PUSHBUTTON 8(6) btn30_of USER-COMMAND of30.
+SELECTION-SCREEN END OF LINE.
+
 * Radiobuttonblock fuer Abrechnung
 PARAMETERS: p_calc TYPE /stb99/ct2_cust_calc AS CHECKBOX.
 PARAMETERS: p_deuv TYPE /stb99/ct2_cust_deuv AS CHECKBOX.
@@ -102,7 +106,7 @@ SELECTION-SCREEN END OF SCREEN 060.
 
 * hier kann die Reihenfolge der Tab-Stripped verändert werden
 SELECTION-SCREEN:
-  BEGIN OF TABBED BLOCK mytab FOR 25 LINES,
+  BEGIN OF TABBED BLOCK mytab FOR 17 LINES,
     TAB (20) button1 USER-COMMAND push1 DEFAULT SCREEN 010,
     TAB (20) button2 USER-COMMAND push2 DEFAULT SCREEN 020,
     TAB (20) button3 USER-COMMAND push3 DEFAULT SCREEN 030,
@@ -115,9 +119,7 @@ SELECTION-SCREEN:
 *----------------------------------------------------------------------*
 * Selektionsbild - Testoptionen
 *----------------------------------------------------------------------*
-SELECTION-SCREEN BEGIN OF BLOCK b4 WITH FRAME TITLE TEXT-006.
 PARAMETERS: p_dest TYPE rfcdest.
-SELECTION-SCREEN END OF BLOCK b4.
 
 AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_dest.
 
@@ -137,6 +139,17 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_dest.
   IF sy-subrc = 0.
     p_dest = ls_return-fieldval.
   ENDIF.
+*----------------------------------------------------------------------*
+AT SELECTION-SCREEN.
+*----------------------------------------------------------------------*
+
+  CASE sy-ucomm.
+    WHEN 'ON30'.
+      PERFORM set_abrechnung USING abap_true.
+    WHEN 'OF30'.
+      PERFORM set_abrechnung USING abap_false.
+  ENDCASE.
+
 
 *----------------------------------------------------------------------*
 INITIALIZATION.
@@ -149,6 +162,8 @@ INITIALIZATION.
   button5 = TEXT-trv.
   button6 = TEXT-pun.
 
+  btn30_on  = 'alle+'.
+  btn30_of  = 'alle-'.
 
   mytab-prog = sy-repid.
   mytab-dynnr = 010.
@@ -162,3 +177,34 @@ INITIALIZATION.
     EXCEPTIONS                                               "StB-CP
       no_active_plvar   = 0                                  "StB-CP
       OTHERS            = 0.                                 "StB-CP
+
+
+FORM set_abrechnung USING iv_value TYPE abap_bool.
+
+  p_calc  = iv_value.
+  p_pcp0  = iv_value.
+  p_deuv  = iv_value.
+  p_lstb  = iv_value.
+  p_elsta = iv_value.
+  p_elena = iv_value.
+  p_bv    = iv_value.
+  p_ea    = iv_value.
+  p_ee    = iv_value.
+  p_rbm   = iv_value.
+  p_sv    = iv_value.
+  p_zs    = iv_value.
+  p_bav   = iv_value.
+  p_a1    = iv_value.
+  p_eau   = iv_value.
+  p_krank = iv_value.
+  p_rent  = iv_value.
+  p_lsta  = iv_value.
+  p_eubp  = iv_value.
+  p_betri = iv_value.
+  p_beitr = iv_value.
+  p_agkto = iv_value.
+  p_dabpv = iv_value.
+  p_rvbf  = iv_value.
+  p_gos   = iv_value.
+
+ENDFORM.

@@ -758,7 +758,7 @@ FORM write_gos .
 
     APPEND ls_objhead TO lt_objhead.
 
-    IF p_test IS NOT INITIAL.
+    IF p_test IS INITIAL.
 
 *--------------------------------------------------------------------*
 * SAPoffice-Dokument erzeugen
@@ -846,17 +846,15 @@ FORM write_gos .
 
       ENDIF.
     ENDIF.
-*    WRITE: / 'Anlage angelegt:',
-*             lv_filename,
-*             'PERNR:',
-*             ls_attachment-pernr,
-*             'DOC_ID:',
-*             ls_docinfo-doc_id.
-
   ENDLOOP.
 
-  PERFORM add_result
-    USING ls_cloned-tabname 'G' l_lines l_size 0 0 'GOS angelegt'.
+  IF p_test IS INITIAL.
+    PERFORM add_result
+        USING ls_cloned-tabname 'G' l_lines l_size 0 0 'GOS angelegt'.
+  ELSE.
+    PERFORM add_result
+          USING ls_cloned-tabname 'G' l_lines l_size 0 4 'GOS getestet'.
+  ENDIF.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
