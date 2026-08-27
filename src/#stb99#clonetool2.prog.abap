@@ -78,7 +78,7 @@ START-OF-SELECTION.
   PERFORM write_data_to_tables.
 
   IF p_down IS NOT INITIAL.
-    PERFORM save_lt_xstring_to_file.
+    PERFORM save_lt_xstring_to_package.
   ENDIF.
   PERFORM show_result.
   PERFORM liste.
@@ -126,3 +126,124 @@ FORM overwrite_customizing_with_sel .
 
 
 ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_LT_XSTRING_TO_PACKAGE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_lt_xstring_to_package.
+
+  CONSTANTS lc_chunk_size TYPE i VALUE 100288000.
+
+  DATA: lv_folder   TYPE string,
+        lv_manifest TYPE xstring,
+        lv_file     TYPE string.
+
+  IF lt_xstring IS INITIAL.
+    MESSAGE 'Keine XSTRING-Daten zum Speichern vorhanden.' TYPE 'S' DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  cl_gui_frontend_services=>directory_browse(
+    EXPORTING
+      window_title    = 'Zielverzeichnis auswählen'
+    CHANGING
+      selected_folder = lv_folder
+    EXCEPTIONS
+      OTHERS          = 1 ).
+
+  IF sy-subrc <> 0 OR lv_folder IS INITIAL.
+    RETURN.
+  ENDIF.
+
+  EXPORT lt_cloned = lt_cloned
+         lt_pernr  = lt_pernr
+    TO DATA BUFFER lv_manifest.
+
+  lv_file = |{ lv_folder }\\manifest.bin|.
+  PERFORM download_xstring_file USING lv_manifest lv_file.
+
+  LOOP AT lt_xstring INTO lx.
+    PERFORM download_xstring_chunks USING lx lv_folder sy-tabix.
+  ENDLOOP.
+
+  MESSAGE |Clone-Paket gespeichert: { lv_folder }| TYPE 'S'.
+
+ENDFORM.
+
+FORM download_xstring_chunks
+  USING
+    iv_xstring TYPE xstring
+    iv_folder  TYPE string
+    iv_index   TYPE i.
+
+  CONSTANTS lc_chunk_size TYPE i VALUE 100288000.
+
+  DATA: lv_size   TYPE i,
+        lv_offset TYPE i,
+        lv_len    TYPE i,
+        lv_part   TYPE i VALUE 1,
+        lv_xpart  TYPE xstring,
+        lv_file   TYPE string,
+        lv_idx    TYPE n LENGTH 6,
+        lv_prt    TYPE n LENGTH 4.
+
+  lv_size = xstrlen( iv_xstring ).
+  lv_idx = iv_index.
+
+  WHILE lv_offset < lv_size.
+
+    lv_len = lc_chunk_size.
+
+    IF lv_offset + lv_len > lv_size.
+      lv_len = lv_size - lv_offset.
+    ENDIF.
+
+    lv_xpart = iv_xstring+lv_offset(lv_len).
+    lv_prt = lv_part.
+    lv_file = |{ iv_folder }\\data_{ lv_idx }_{ lv_prt }.bin|.
+
+    PERFORM download_xstring_file USING lv_xpart lv_file.
+
+    lv_offset = lv_offset + lv_len.
+    lv_part = lv_part + 1.
+
+  ENDWHILE.
+
+ENDFORM.
+
+FORM download_xstring_file
+  USING
+    iv_xstring TYPE xstring
+    iv_file    TYPE string.
+
+  DATA: lt_bin  TYPE solix_tab,
+        lv_size TYPE i.
+
+  CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+    EXPORTING
+      buffer        = iv_xstring
+    IMPORTING
+      output_length = lv_size
+    TABLES
+      binary_tab    = lt_bin.
+
+  cl_gui_frontend_services=>gui_download(
+    EXPORTING
+      bin_filesize = lv_size
+      filename     = iv_file
+      filetype     = 'BIN'
+    CHANGING
+      data_tab     = lt_bin
+    EXCEPTIONS
+      OTHERS       = 1 ).
+
+  IF sy-subrc <> 0.
+    MESSAGE |Datei konnte nicht gespeichert werden: { iv_file }| TYPE 'E'.
+  ENDIF.
+
+
+ENDFORM.
