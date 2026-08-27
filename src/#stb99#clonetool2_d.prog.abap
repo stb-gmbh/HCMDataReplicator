@@ -48,5 +48,3 @@ TYPES:
 DATA:
   gt_result TYPE STANDARD TABLE OF ty_result,
   gs_result TYPE ty_result.
-
-CONSTANTS lc_chunk_size TYPE i VALUE 100288000.
