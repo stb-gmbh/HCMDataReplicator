@@ -135,6 +135,7 @@ FORM upload_xstring_file
 
   CLEAR cv_xstring.
 
+
   cl_gui_frontend_services=>gui_upload(
     EXPORTING
       filename   = iv_file
@@ -144,10 +145,28 @@ FORM upload_xstring_file
     CHANGING
       data_tab   = lt_bin
     EXCEPTIONS
-      OTHERS     = 1 ).
+      file_open_error         = 1
+      file_read_error         = 2
+      no_batch                = 3
+      gui_refuse_filetransfer = 4
+      invalid_type            = 5
+      no_authority            = 6
+      unknown_error           = 7
+      bad_data_format         = 8
+      header_not_allowed      = 9
+      separator_not_allowed   = 10
+      header_too_long         = 11
+      unknown_dp_error        = 12
+      access_denied           = 13
+      dp_out_of_memory        = 14
+      disk_full               = 15
+      dp_timeout              = 16
+      not_supported_by_gui    = 17
+      error_no_gui            = 18
+      OTHERS                  = 20 ).
 
   IF sy-subrc <> 0.
-    MESSAGE |Datei konnte nicht hochgeladen werden: { iv_file }| TYPE 'E'.
+    MESSAGE |GUI_UPLOAD fehlgeschlagen. Datei: { iv_file }, Fehler: { sy-subrc }| TYPE 'E'.
   ENDIF.
 
   CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
