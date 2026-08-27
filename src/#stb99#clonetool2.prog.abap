@@ -165,6 +165,12 @@ FORM save_lt_xstring_to_package.
   PERFORM download_xstring_file USING lv_manifest lv_file.
 
   LOOP AT lt_xstring INTO lx.
+
+      cmsg = |Download verarbeiten: ({ sy-index }/{ lines( lt_xstring ) })|.
+      CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+        EXPORTING
+          percentage = sy-tabix * 100 / lines( lt_cloned )
+          text       = cmsg.
     PERFORM download_xstring_chunks USING lx lv_folder sy-tabix.
   ENDLOOP.
 
