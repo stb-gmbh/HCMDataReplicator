@@ -294,7 +294,7 @@ FORM check_mandt .
     FROM t000
     WHERE mandt = @sy-mandt.
 
-  IF ls_t000-cccategory EQ 'P' AND sy-sysid ne 'H4D'.
+  IF ls_t000-cccategory EQ 'P' AND sy-sysid NE 'H4D'.
     CALL FUNCTION 'POPUP_TO_INFORM'
       EXPORTING
         titel = 'Abbruch'
@@ -597,11 +597,12 @@ FORM write_gos .
   DESCRIBE TABLE gt_attachments LINES l_lines. "Datensätze
 
   "Schreiben
-    l_size = xstrlen( lx ) / 1024.
+  l_size = xstrlen( lx ) / 1024.
+  DESCRIBE TABLE gt_attachments LINES l_lines.
 
   LOOP AT gt_attachments INTO ls_attachment.
 
-   cmsg = |GOS schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( gt_attachments ) })|.
+    cmsg = |GOS schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( gt_attachments ) })|.
 
     CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
       EXPORTING
@@ -757,38 +758,39 @@ FORM write_gos .
 
     APPEND ls_objhead TO lt_objhead.
 
+    IF p_test IS NOT INITIAL.
 
 *--------------------------------------------------------------------*
 * SAPoffice-Dokument erzeugen
 *--------------------------------------------------------------------*
-    CALL FUNCTION 'SO_DOCUMENT_INSERT_API1'
-      EXPORTING
-        folder_id                  = ls_folder_id
-        document_data              = ls_docdata
-        document_type              = lv_doc_type
-      IMPORTING
-        document_info              = ls_docinfo
-      TABLES
-        object_header              = lt_objhead
-        contents_hex               = lt_hex
-      EXCEPTIONS
-        folder_not_exist           = 1
-        document_type_not_exist    = 2
-        operation_no_authorization = 3
-        parameter_error            = 4
-        x_error                    = 5
-        enqueue_error              = 6
-        OTHERS                     = 7.
+      CALL FUNCTION 'SO_DOCUMENT_INSERT_API1'
+        EXPORTING
+          folder_id                  = ls_folder_id
+          document_data              = ls_docdata
+          document_type              = lv_doc_type
+        IMPORTING
+          document_info              = ls_docinfo
+        TABLES
+          object_header              = lt_objhead
+          contents_hex               = lt_hex
+        EXCEPTIONS
+          folder_not_exist           = 1
+          document_type_not_exist    = 2
+          operation_no_authorization = 3
+          parameter_error            = 4
+          x_error                    = 5
+          enqueue_error              = 6
+          OTHERS                     = 7.
 
-    IF sy-subrc <> 0.
+      IF sy-subrc <> 0.
 
-      WRITE: / 'Fehler SO_DOCUMENT_INSERT_API1:',
-               sy-subrc,
-               lv_filename.
+        WRITE: / 'Fehler SO_DOCUMENT_INSERT_API1:',
+                 sy-subrc,
+                 lv_filename.
 
-      CONTINUE.
+        CONTINUE.
 
-    ENDIF.
+      ENDIF.
 
 
 *--------------------------------------------------------------------*
@@ -796,8 +798,8 @@ FORM write_gos .
 *
 * PA30 Mitarbeiter = BUS1065
 *--------------------------------------------------------------------*
-    ls_obj_a-objtype = 'BUS1065'.
-    ls_obj_a-objkey  = ls_attachment-pernr.
+      ls_obj_a-objtype = 'BUS1065'.
+      ls_obj_a-objkey  = ls_attachment-pernr.
 
 
 *--------------------------------------------------------------------*
@@ -810,8 +812,8 @@ FORM write_gos .
 * z.B.
 * FOL2600000000024EXT5100000000033
 *--------------------------------------------------------------------*
-    ls_obj_b-objtype = 'MESSAGE'.
-    ls_obj_b-objkey  = ls_docinfo-doc_id.
+      ls_obj_b-objtype = 'MESSAGE'.
+      ls_obj_b-objkey  = ls_docinfo-doc_id.
 
 
 *--------------------------------------------------------------------*
@@ -819,31 +821,31 @@ FORM write_gos .
 *
 * ATTA = Attachment
 *--------------------------------------------------------------------*
-    CALL FUNCTION 'BINARY_RELATION_CREATE_COMMIT'
-      EXPORTING
-        obj_rolea      = ls_obj_a
-        obj_roleb      = ls_obj_b
-        relationtype   = 'ATTA'
-      IMPORTING
-        binrel         = ls_binrel
-      TABLES
-        binrel_attrib  = lt_binatt
-      EXCEPTIONS
-        no_model       = 1
-        internal_error = 2
-        unknown        = 3
-        OTHERS         = 4.
+      CALL FUNCTION 'BINARY_RELATION_CREATE_COMMIT'
+        EXPORTING
+          obj_rolea      = ls_obj_a
+          obj_roleb      = ls_obj_b
+          relationtype   = 'ATTA'
+        IMPORTING
+          binrel         = ls_binrel
+        TABLES
+          binrel_attrib  = lt_binatt
+        EXCEPTIONS
+          no_model       = 1
+          internal_error = 2
+          unknown        = 3
+          OTHERS         = 4.
 
-    IF sy-subrc <> 0.
+      IF sy-subrc <> 0.
 
-      WRITE: / 'Fehler BINARY_RELATION_CREATE_COMMIT:',
-               sy-subrc,
-               lv_filename.
+        WRITE: / 'Fehler BINARY_RELATION_CREATE_COMMIT:',
+                 sy-subrc,
+                 lv_filename.
 
-      CONTINUE.
+        CONTINUE.
 
+      ENDIF.
     ENDIF.
-
 *    WRITE: / 'Anlage angelegt:',
 *             lv_filename,
 *             'PERNR:',
