@@ -157,22 +157,27 @@ FORM save_lt_xstring_to_package.
     RETURN.
   ENDIF.
 
+
+
+  LOOP AT lt_xstring INTO lx.
+
+    cmsg = |Download verarbeiten: ({ sy-index }/{ lines( lt_xstring ) })|.
+    CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+      EXPORTING
+        percentage = sy-tabix * 100 / lines( lt_cloned )
+        text       = cmsg.
+    PERFORM download_xstring_chunks USING lx lv_folder sy-tabix.
+  ENDLOOP.
+
   EXPORT lt_cloned = lt_cloned
-         lt_pernr  = lt_pernr
-    TO DATA BUFFER lv_manifest.
+          lt_pernr  = lt_pernr
+          gt_package_parts  = gt_package_parts
+     TO DATA BUFFER lv_manifest.
 
   lv_file = |{ lv_folder }\\manifest.bin|.
   PERFORM download_xstring_file USING lv_manifest lv_file.
 
-  LOOP AT lt_xstring INTO lx.
 
-      cmsg = |Download verarbeiten: ({ sy-index }/{ lines( lt_xstring ) })|.
-      CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
-        EXPORTING
-          percentage = sy-tabix * 100 / lines( lt_cloned )
-          text       = cmsg.
-    PERFORM download_xstring_chunks USING lx lv_folder sy-tabix.
-  ENDLOOP.
 
   MESSAGE |Clone-Paket gespeichert: { lv_folder }| TYPE 'S'.
 
@@ -214,6 +219,10 @@ FORM download_xstring_chunks
     lv_part = lv_part + 1.
 
   ENDWHILE.
+
+  ls_package_part-index = iv_index.
+  ls_package_part-parts = lv_part.
+  APPEND ls_package_part TO gt_package_parts.
 
 ENDFORM.
 

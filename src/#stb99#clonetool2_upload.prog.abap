@@ -63,6 +63,7 @@ FORM upload_clone_file.
 
   IMPORT lt_cloned = lt_cloned
          lt_pernr  = lt_pernr
+          gt_package_parts = gt_package_parts
     FROM DATA BUFFER lv_manifest.
 
   REFRESH lt_xstring.
@@ -73,22 +74,18 @@ FORM upload_clone_file.
     lv_idx = ls_cloned-index.
     lv_part = 1.
 
-    DO.
+    READ TABLE gt_package_parts INTO ls_package_part
+          WITH KEY index = ls_cloned-index.
+
+    DO ls_package_part-parts TIMES.
       lv_prt = lv_part.
       lv_file = |{ p_folder }\\data_{ lv_idx }_{ lv_prt }.bin|.
-
-      PERFORM frontend_file_exists USING lv_file CHANGING lv_exists.
 
       cmsg = |Tabelle verarbeiten: { ls_cloned-tabname } ({ lv_idx }/{ lines( lt_cloned ) }) File: { lv_prt }|.
       CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
         EXPORTING
           percentage = sy-tabix * 100 / lines( lt_cloned )
           text       = cmsg.
-
-
-      IF lv_exists IS INITIAL.
-        EXIT.
-      ENDIF.
 
       PERFORM upload_xstring_file USING lv_file CHANGING lv_xpart.
 

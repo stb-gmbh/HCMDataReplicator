@@ -9,12 +9,12 @@ DATA: ldo_data   TYPE REF TO data.
 FIELD-SYMBOLS: <lt_itab>    TYPE table.
 
 DATA:
-  lx  TYPE xstring,
-  lt  TYPE TABLE OF t001,
-  lt2 TYPE TABLE OF t001,
+  lx      TYPE xstring,
+  lt      TYPE TABLE OF t001,
+  lt2     TYPE TABLE OF t001,
   l_lines TYPE i,
   l_size  TYPE i,
-  cmsg TYPE string.
+  cmsg    TYPE string.
 
 DATA: lt_xstring TYPE /stb99/xtab.
 
@@ -36,13 +36,13 @@ DATA lv_msg TYPE text256.
 
 TYPES:
   BEGIN OF ty_result,
-    status       TYPE icon_d,
-    tabname      TYPE tabname,
-    add_info     TYPE char100,
-    lines_read   TYPE i,
-    size_kb      TYPE p LENGTH 10 DECIMALS 2,
-    lines_write  TYPE i,
-    message      TYPE char200,
+    status      TYPE icon_d,
+    tabname     TYPE tabname,
+    add_info    TYPE char100,
+    lines_read  TYPE i,
+    size_kb     TYPE p LENGTH 10 DECIMALS 2,
+    lines_write TYPE i,
+    message     TYPE char200,
   END OF ty_result.
 
 DATA:
@@ -50,3 +50,12 @@ DATA:
   gs_result TYPE ty_result.
 
 CONSTANTS lc_chunk_size TYPE i VALUE 10485760.
+
+TYPES:
+  BEGIN OF ty_package_part,
+    index TYPE i,
+    parts TYPE i,
+  END OF ty_package_part.
+
+DATA: gt_package_parts TYPE STANDARD TABLE OF ty_package_part,
+      ls_package_part  TYPE ty_package_part.
