@@ -79,12 +79,11 @@ FORM upload_clone_file.
 
       PERFORM frontend_file_exists USING lv_file CHANGING lv_exists.
 
-  cmsg = |Tabelle verarbeiten: { ls_cloned-tabname } ({ sy-tabix }/{ lines( lt_cloned ) }) File: { lv_file }|.
-
-    CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
-      EXPORTING
-        percentage = sy-tabix * 100 / lines( lt_cloned )
-        text       = cmsg.
+      cmsg = |Tabelle verarbeiten: { ls_cloned-tabname } ({ lv_idx }/{ lines( lt_cloned ) }) File: { lv_prt }|.
+      CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+        EXPORTING
+          percentage = sy-tabix * 100 / lines( lt_cloned )
+          text       = cmsg.
 
 
       IF lv_exists IS INITIAL.
