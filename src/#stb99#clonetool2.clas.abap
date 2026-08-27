@@ -147,6 +147,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_eubp.
     CALL METHOD me->read_table_gos.
     CALL METHOD me->READ_MELD_DABPV.
+    CALL METHOD me->read_meld_rvbeaforms.
+
     "versicheurngsnummer vav
     "KEG
     "ESS ABW PTCOR

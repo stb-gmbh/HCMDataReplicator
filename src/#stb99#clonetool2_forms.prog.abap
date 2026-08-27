@@ -859,3 +859,195 @@ FORM write_gos .
     USING ls_cloned-tabname 'G' l_lines l_size 0 0 'GOS angelegt'.
 
 ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  READ_DYNAMIC_TABLE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM read_dynamic_table .
+
+  DATA:
+    lt_desc        TYPE /stb99/clonetool2rtts=>tt_components,
+    lo_table_descr TYPE REF TO cl_abap_tabledescr,
+    lr_source_data TYPE REF TO data.
+
+  FIELD-SYMBOLS:
+    <lt_source> TYPE table.
+
+  "interne Tabelle erzeugen
+  CREATE DATA ldo_data TYPE TABLE OF (ls_cloned-tabname).
+  ASSIGN ldo_data->* TO <lt_itab>.
+  READ TABLE lt_xstring INTO lx INDEX ls_cloned-index. "Tabelle füllen aus xstring
+  REFRESH <lt_itab>.
+
+  READ TABLE lt_xstring
+    INTO lx
+    INDEX ls_cloned-index.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CLEAR lt_desc.
+
+  IMPORT
+    p2 = lt_desc
+    FROM DATA BUFFER lx.
+
+  lo_table_descr =
+    /stb99/clonetool2rtts=>create_table(
+      it_desc = lt_desc ).
+
+  CREATE DATA lr_source_data
+    TYPE HANDLE lo_table_descr.
+
+  ASSIGN lr_source_data->* TO <lt_source>.
+
+  TRY.
+
+      IMPORT
+        p1 = <lt_source>
+        FROM DATA BUFFER lx.
+
+    CATCH cx_root INTO DATA(lx_error).
+
+      PERFORM add_result
+        USING
+          ls_cloned-tabname
+          space
+          l_lines
+          l_size
+          sy-dbcnt
+          2
+          'Originaldaten konnten nicht importiert werden.'.
+  ENDTRY.
+
+  FIELD-SYMBOLS:
+    <ls_source> TYPE any,
+    <ls_target> TYPE any.
+
+  LOOP AT <lt_source> ASSIGNING <ls_source>.
+
+    APPEND INITIAL LINE TO <lt_itab>
+      ASSIGNING <ls_target>.
+
+    MOVE-CORRESPONDING <ls_source> TO <ls_target>.
+
+  ENDLOOP.
+
+ENDFORM.
+FORM save_lt_xstring_to_file.
+
+  DATA: lv_file_xstr   TYPE xstring,
+        lt_bin         TYPE solix_tab,
+        lv_bin_size    TYPE i,
+        lv_filename    TYPE string,
+        lv_path        TYPE string,
+        lv_fullpath    TYPE string,
+        lv_action      TYPE i,
+        lv_defaultname TYPE string.
+
+  IF lt_xstring IS INITIAL.
+    MESSAGE 'Keine XSTRING-Daten zum Speichern vorhanden.' TYPE 'S' DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  IF sy-batch IS NOT INITIAL.
+    MESSAGE 'Lokaler Download ist im Hintergrund nicht möglich.' TYPE 'S' DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  lv_defaultname = |clonetool2_{ sy-datum }_{ sy-uzeit }.bin|.
+
+  cl_gui_frontend_services=>file_save_dialog(
+    EXPORTING
+      window_title      = 'Clone-Daten speichern'
+      default_extension = 'bin'
+      default_file_name = lv_defaultname
+      file_filter       = 'Binärdatei (*.bin)|*.bin|Alle Dateien (*.*)|*.*'
+    CHANGING
+      filename          = lv_filename
+      path              = lv_path
+      fullpath          = lv_fullpath
+      user_action       = lv_action
+    EXCEPTIONS
+      OTHERS            = 1 ).
+
+  IF sy-subrc <> 0
+     OR lv_action = cl_gui_frontend_services=>action_cancel
+     OR lv_fullpath IS INITIAL.
+    RETURN.
+  ENDIF.
+
+  EXPORT lt_xstring = lt_xstring
+         lt_cloned  = lt_cloned
+         lt_pernr   = lt_pernr
+    TO DATA BUFFER lv_file_xstr.
+
+  CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+    EXPORTING
+      buffer        = lv_file_xstr
+    IMPORTING
+      output_length = lv_bin_size
+    TABLES
+      binary_tab    = lt_bin.
+
+  cl_gui_frontend_services=>gui_download(
+    EXPORTING
+      bin_filesize = lv_bin_size
+      filename     = lv_fullpath
+      filetype     = 'BIN'
+    CHANGING
+      data_tab     = lt_bin
+    EXCEPTIONS
+      OTHERS       = 1 ).
+
+  IF sy-subrc <> 0.
+    MESSAGE |Datei konnte nicht gespeichert werden. Fehler { sy-subrc }| TYPE 'E'.
+  ENDIF.
+
+  MESSAGE |Clone-Daten gespeichert: { lv_fullpath }| TYPE 'S'.
+
+ENDFORM.
+FORM overwrite_customizing_with_sel .
+  p_custom-destination = p_dest.
+
+  IF p_org   IS NOT INITIAL. p_custom-org   = p_org.   ENDIF.
+  IF p_wegid IS NOT INITIAL. p_custom-wegid = p_wegid. ENDIF.
+  IF p_calc  IS NOT INITIAL. p_custom-calc  = p_calc.  ENDIF.
+  IF p_pcp0  IS NOT INITIAL. p_custom-pcp0  = p_pcp0.  ENDIF.
+  IF p_deuv  IS NOT INITIAL. p_custom-deuv  = p_deuv.  ENDIF.
+  IF p_lstb  IS NOT INITIAL. p_custom-lstb  = p_lstb.  ENDIF.
+  IF p_elsta IS NOT INITIAL. p_custom-elsta = p_elsta. ENDIF.
+  IF p_elena IS NOT INITIAL. p_custom-elena = p_elena. ENDIF.
+  IF p_bv    IS NOT INITIAL. p_custom-bv    = p_bv.    ENDIF.
+  IF p_ea    IS NOT INITIAL. p_custom-ea    = p_ea.    ENDIF.
+  IF p_ee    IS NOT INITIAL. p_custom-ee    = p_ee.    ENDIF.
+  IF p_rbm   IS NOT INITIAL. p_custom-rbm   = p_rbm.   ENDIF.
+  IF p_sv    IS NOT INITIAL. p_custom-sv    = p_sv.    ENDIF.
+  IF p_zs    IS NOT INITIAL. p_custom-zs    = p_zs.    ENDIF.
+  IF p_bav   IS NOT INITIAL. p_custom-bav   = p_bav.   ENDIF.
+  IF p_time  IS NOT INITIAL. p_custom-time  = p_time.  ENDIF.
+  IF p_lohn  IS NOT INITIAL. p_custom-lohn  = p_lohn.  ENDIF.
+  IF p_trvl  IS NOT INITIAL. p_custom-trvl  = p_trvl.  ENDIF.
+  IF p_a1    IS NOT INITIAL. p_custom-a1    = p_a1.    ENDIF.
+  IF p_test  IS NOT INITIAL. p_custom-test  = p_test.  ENDIF.
+  IF p_det   IS NOT INITIAL. p_custom-det   = p_det.   ENDIF.
+  IF p_del   IS NOT INITIAL. p_custom-del   = p_del.   ENDIF.
+  IF p_eau   IS NOT INITIAL. p_custom-eau   = p_eau.   ENDIF.
+  IF p_krank IS NOT INITIAL. p_custom-krank = p_krank. ENDIF.
+  IF p_rent  IS NOT INITIAL. p_custom-rent  = p_rent.  ENDIF.
+  IF p_lsta  IS NOT INITIAL. p_custom-lsta  = p_lsta.  ENDIF.
+  IF p_eubp  IS NOT INITIAL. p_custom-eubp  = p_eubp.  ENDIF.
+  IF p_betri IS NOT INITIAL. p_custom-betri = p_betri. ENDIF.
+  IF p_beitr IS NOT INITIAL. p_custom-beitr = p_beitr. ENDIF.
+  IF p_agkto IS NOT INITIAL. p_custom-agkto = p_agkto. ENDIF.
+  IF p_dabpv IS NOT INITIAL. p_custom-dabpv = p_dabpv. ENDIF.
+  IF p_rvbf  IS NOT INITIAL. p_custom-rvbf  = p_rvbf. ENDIF.
+  IF p_gos   IS NOT INITIAL. p_custom-gos   = p_gos.   ENDIF.
+
+
+ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL

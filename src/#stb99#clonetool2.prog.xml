@@ -442,6 +442,12 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_DOWN</KEY>
+     <ENTRY>Download</ENTRY>
+     <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_EA</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
@@ -563,6 +569,12 @@
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_SAVE</KEY>
+     <ENTRY>auf diesem System speichern</ENTRY>
+     <LENGTH>35</LENGTH>
     </item>
     <item>
      <ID>S</ID>
