@@ -136,8 +136,6 @@ ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
 *----------------------------------------------------------------------*
 FORM save_lt_xstring_to_package.
 
-  CONSTANTS lc_chunk_size TYPE i VALUE 50288000.
-
   DATA: lv_folder   TYPE string,
         lv_manifest TYPE xstring,
         lv_file     TYPE string.
@@ -179,8 +177,6 @@ FORM download_xstring_chunks
     iv_xstring TYPE xstring
     iv_folder  TYPE string
     iv_index   TYPE i.
-
-  CONSTANTS lc_chunk_size TYPE i VALUE 50288000.
 
   DATA: lv_size   TYPE i,
         lv_offset TYPE i,
