@@ -160,13 +160,13 @@ FORM save_lt_xstring_to_package.
 
 
   LOOP AT lt_xstring INTO lx.
-
+    DATA(lv_index) = sy-tabix.
     cmsg = |Download verarbeiten: ({ sy-index }/{ lines( lt_xstring ) })|.
     CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
       EXPORTING
         percentage = sy-tabix * 100 / lines( lt_cloned )
         text       = cmsg.
-    PERFORM download_xstring_chunks USING lx lv_folder sy-tabix.
+    PERFORM download_xstring_chunks USING lx lv_folder lv_index.
   ENDLOOP.
 
   EXPORT lt_cloned = lt_cloned
@@ -221,7 +221,7 @@ FORM download_xstring_chunks
   ENDWHILE.
 
   ls_package_part-index = iv_index.
-  ls_package_part-parts = lv_part.
+  ls_package_part-parts = lv_part - 1.
   APPEND ls_package_part TO gt_package_parts.
 
 ENDFORM.
