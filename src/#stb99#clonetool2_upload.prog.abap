@@ -93,6 +93,8 @@ FORM upload_clone_file.
       PERFORM upload_xstring_file USING lv_file CHANGING lv_xpart.
 
       CONCATENATE lv_table lv_xpart INTO lv_table IN BYTE MODE.
+      CLEAR lv_xpart.
+      FREE lv_xpart.
 
       lv_part = lv_part + 1.
     ENDDO.
@@ -106,7 +108,8 @@ FORM upload_clone_file.
     ENDDO.
 
     MODIFY lt_xstring FROM lv_table INDEX ls_cloned-index.
-
+    CLEAR lv_table.
+    FREE lv_table.
   ENDLOOP.
 
 ENDFORM.
@@ -177,4 +180,6 @@ FORM upload_xstring_file
     TABLES
       binary_tab   = lt_bin.
 
+  CLEAR lt_bin.
+  FREE lt_bin.
 ENDFORM.
