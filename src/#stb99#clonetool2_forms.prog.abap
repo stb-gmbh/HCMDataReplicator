@@ -252,60 +252,6 @@ FORM write_data_to_tables .
 
 ENDFORM.                    " WRITE_DATA_TO_TABLES
 *&---------------------------------------------------------------------*
-*&      Form  GET_CUSTOMIZING
-*&---------------------------------------------------------------------*
-*       text
-*----------------------------------------------------------------------*
-*  -->  p1        text
-*  <--  p2        text
-*----------------------------------------------------------------------*
-FORM get_customizing .
-  DATA: ls_tmp   TYPE /stb99/ct2_cust,
-        lr_desc  TYPE REF TO cl_abap_structdescr,
-        lv_param TYPE string.
-
-  FIELD-SYMBOLS:
-    <field> TYPE any,
-    <param> TYPE any.
-
-  SELECT SINGLE *
-    FROM /stb99/ct2_cust
-    INTO @ls_tmp
-   WHERE destination = @p_dest.
-
-  IF sy-subrc <> 0.
-    SELECT  *
-      FROM /stb99/ct2_cust UP TO 1 ROWS
-      INTO @ls_tmp ORDER BY destination ASCENDING.
-      EXIT.
-    ENDSELECT.
-  ENDIF.
-
-  lr_desc ?= cl_abap_typedescr=>describe_by_data( ls_tmp ).
-
-  LOOP AT lr_desc->components INTO DATA(ls_comp).
-
-    ASSIGN COMPONENT ls_comp-name OF STRUCTURE ls_tmp TO <field>.
-    IF sy-subrc <> 0.
-      CONTINUE.
-    ENDIF.
-
-    IF ls_comp-name = 'DESTINATION'.
-      lv_param = 'P_DEST'.
-    ELSE.
-      CONCATENATE 'P_' ls_comp-name INTO lv_param.
-    ENDIF.
-
-    ASSIGN (lv_param) TO <param>.
-    IF sy-subrc <> 0.
-      CONTINUE.
-    ENDIF.
-
-    <param> = <field>.
-
-  ENDLOOP.
-ENDFORM.
-*&---------------------------------------------------------------------*
 *&      Form  CHECK_PERNR_SELECTION
 *&---------------------------------------------------------------------*
 *       text
@@ -350,7 +296,7 @@ FORM check_mandt .
     FROM t000
     WHERE mandt = @sy-mandt.
 
-  IF ls_t000-cccategory EQ 'P'.
+  IF ls_t000-cccategory EQ 'P' AND sy-sysid ne 'H4D'.
     CALL FUNCTION 'POPUP_TO_INFORM'
       EXPORTING
         titel = 'Abbruch'
@@ -656,6 +602,14 @@ FORM write_gos .
     l_size = xstrlen( lx ) / 1024.
 
   LOOP AT gt_attachments INTO ls_attachment.
+
+   cmsg = |GOS schreiben: { ls_cloned-tabname } ({ sy-tabix }/{ lines( gt_attachments ) })|.
+
+    CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+      EXPORTING
+        percentage = sy-tabix * 100 / lines( lt_cloned )
+        text       = cmsg.
+
 
 *--------------------------------------------------------------------*
 * Personalnummer normalisieren

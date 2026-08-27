@@ -32,7 +32,6 @@ START-OF-SELECTION.
       text = |Die Daten werden gelesen...|.
 
   TRY.
-
       CALL FUNCTION '/STB99/CLONE_DATA'
         DESTINATION p_dest
         EXPORTING
@@ -76,18 +75,6 @@ START-OF-SELECTION.
 
   PERFORM write_data_to_tables.
   PERFORM show_result.
-
-  IF sy-sysid EQ 'H4D'.
-    SUBMIT zhr_after_import
-  AND RETURN.
-
-    IF sy-subrc = 0.
-      WRITE: / 'ZHR_AFTER_IMPORT erfolgreich ausgeführt'.
-    ELSE.
-      WRITE: / 'Fehler beim Aufruf von ZHR_AFTER_IMPORT'.
-    ENDIF.
-  ENDIF.
-
   PERFORM liste.
 
 END-OF-SELECTION.
@@ -101,6 +88,8 @@ END-OF-SELECTION.
 *  <--  p2        text
 *----------------------------------------------------------------------*
 FORM overwrite_customizing_with_sel .
+  p_custom-destination = p_dest.
+
   IF p_org   IS NOT INITIAL. p_custom-org   = p_org.   ENDIF.
   IF p_wegid IS NOT INITIAL. p_custom-wegid = p_wegid. ENDIF.
   IF p_calc  IS NOT INITIAL. p_custom-calc  = p_calc.  ENDIF.
@@ -131,10 +120,10 @@ FORM overwrite_customizing_with_sel .
   IF p_betri IS NOT INITIAL. p_custom-betri = p_betri. ENDIF.
   IF p_beitr IS NOT INITIAL. p_custom-beitr = p_beitr. ENDIF.
   IF p_agkto IS NOT INITIAL. p_custom-agkto = p_agkto. ENDIF.
-  IF p_DaBPV IS NOT INITIAL. p_custom-DaBPV = p_DaBPV. ENDIF.
-  IF p_t596m IS NOT INITIAL. p_custom-t596m = p_t596m. ENDIF.
+  IF p_dabpv IS NOT INITIAL. p_custom-dabpv = p_dabpv. ENDIF.
+  IF p_rvbf  IS NOT INITIAL. p_custom-rvbf  = p_rvbf. ENDIF.
   IF p_gos   IS NOT INITIAL. p_custom-gos   = p_gos.   ENDIF.
-  p_custom-destination = p_dest.
+
 
 ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
 

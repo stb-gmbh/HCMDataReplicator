@@ -72,7 +72,7 @@ PARAMETERS: p_betri TYPE /stb99/ct2_cust_betri AS CHECKBOX.
 PARAMETERS: p_beitr TYPE /stb99/ct2_cust_beitr AS CHECKBOX.
 PARAMETERS: p_agkto TYPE /stb99/ct2_cust_agkto AS CHECKBOX.
 PARAMETERS: p_DaBPV TYPE /stb99/ct2_cust_DaBPV AS CHECKBOX.
-PARAMETERS: p_t596m TYPE /stb99/ct2_cust_t596m AS CHECKBOX.
+PARAMETERS: p_rvbf  TYPE /stb99/ct2_cust_rvbf AS CHECKBOX.
 PARAMETERS: p_gos TYPE /stb99/ct2_cust_gos AS CHECKBOX.
 SELECTION-SCREEN END OF SCREEN 030.
 
@@ -130,9 +130,6 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_dest.
     p_dest = ls_return-fieldval.
   ENDIF.
 
-  PERFORM get_customizing.
-
-
 *----------------------------------------------------------------------*
 INITIALIZATION.
 *----------------------------------------------------------------------*
@@ -155,5 +152,3 @@ INITIALIZATION.
     EXCEPTIONS                                               "StB-CP
       no_active_plvar   = 0                                  "StB-CP
       OTHERS            = 0.                                 "StB-CP
-
- PERFORM get_customizing.

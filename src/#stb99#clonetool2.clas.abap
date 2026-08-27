@@ -77,8 +77,8 @@ private section.
   methods READ_MELD_LSTB .
   methods READ_MELD_RBM .
   methods READ_MELD_ZS .
-  methods READ_TEMP_T596M .
   methods READ_MELD_DABPV .
+  methods READ_MELD_RVBEAFORMS .
 ENDCLASS.
 
 
@@ -113,7 +113,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       APPEND ls_pernr TO at_pernr.
     ENDSELECT.
 
-    if at_pernr IS INITIAL.
+    if at_pernr[] IS INITIAL.
       raise nothing_selected.
     endif.
 
@@ -131,6 +131,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_tables_pcp0.
     CALL METHOD me->read_meld_a1.
     CALL METHOD me->read_meld_elena.
+    CALL METHOD me->read_meld_eau.
     CALL METHOD me->read_meld_rbm.
     CALL METHOD me->read_meld_bv.
     CALL METHOD me->read_meld_ea.
@@ -144,13 +145,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_arbeitgeberkonto. "Meldeverfahren Arbeitgeberkonto
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
-    CALL METHOD me->read_temp_t596m.
     CALL METHOD me->read_table_gos.
     CALL METHOD me->READ_MELD_DABPV.
-    "dabpv
     "versicheurngsnummer vav
     "KEG
-    "beitragsnachweis
     "ESS ABW PTCOR
     "ptquoded
 
@@ -913,6 +911,32 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD READ_MELD_RVBEAFORMS.
+    CONSTANTS: gui_tabname TYPE tabname VALUE 'P01_RVF_STAT'.
+
+    CHECK me->customizing-rvbf IS NOT INITIAL.
+
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
+
+    CLEAR add_guid_tabs[].
+
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_DXAR_MON'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_DXAR_VAL'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_DXEB_MON'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_DXWL'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_FEHLER'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_HIST'.
+    CALL METHOD me->add_guid_table EXPORTING table = 'P01_RVF_INFO'.
+
+    CALL METHOD me->read_tables_meld_with_guid
+      EXPORTING
+        tab_guid = gui_tabname
+        add_tab  = add_guid_tabs.
+
+
+  ENDMETHOD.
+
+
   METHOD read_meld_zs.
     CHECK me->customizing-zs IS NOT INITIAL.
 
@@ -1052,7 +1076,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       CASE ls_clst-tabname.
         WHEN 'PCL1'.
           CASE ls_clst-relid.
-            WHEN 'B1' OR 'PC' or 'TE'.
+            WHEN 'B1' OR 'PC' OR 'TE'.
               "Personalnummer*
               CLEAR l_srtfd.
               l_srtfd-option = 'CP'.
@@ -1067,7 +1091,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           ENDCASE.
         WHEN 'PCL2'.
           CASE ls_clst-relid.
-            WHEN 'CU' OR 'RD' or 'B2'.
+            WHEN 'CU' OR 'RD' OR 'B2'.
               "Personalnummer*
               CLEAR l_srtfd.
               l_srtfd-option = 'CP'.
@@ -1138,6 +1162,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       APPEND lx TO at_xstrtab.
       ls_cloned-index = sy-tabix.
       ls_cloned-tabname = 'HRP1000'.
+      ls_cloned-mode = 'Z'.
       APPEND ls_cloned TO at_cloned_tables.
     ENDIF.
 
@@ -1145,17 +1170,55 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ASSIGN ldo_data->* TO <lt_itab>.
 
     SELECT * FROM hrp1001 INTO TABLE <lt_itab>
-      WHERE plvar EQ '01'
-        AND ( otype EQ 'P' AND objid IN s_srtfd )
-         OR ( otype EQ 'CP' AND otjid IN s_srtfd ).
+      WHERE plvar EQ '01' AND ( ( otype EQ 'P'  AND sclas EQ 'CP' AND objid IN s_srtfd ) OR
+                                ( otype EQ 'CP' AND sclas EQ 'P'  AND sobid IN s_srtfd )
+                              ).
+
+    "Zentrale Personen sammeln
+    REFRESH s_srtfd2.
+    LOOP AT <lt_itab> ASSIGNING <line>.
+      ASSIGN COMPONENT 'OTYPE' OF STRUCTURE <line> TO <field>.
+      IF sy-subrc EQ 0.
+        CHECK <field> EQ 'CP'.
+        ASSIGN COMPONENT 'OBJID' OF STRUCTURE <line> TO <field>.
+        CLEAR l_srtfd.
+        l_srtfd-option = 'EQ'.
+        l_srtfd-sign = 'I'.
+        LOOP AT at_pernr INTO ls_pernr.
+          l_srtfd-low = <field>.
+          APPEND l_srtfd TO s_srtfd2.
+        ENDLOOP.
+      ENDIF.
+
+    ENDLOOP.
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
       APPEND lx TO at_xstrtab.
       ls_cloned-index = sy-tabix.
       ls_cloned-tabname = 'HRP1001'.
+      ls_cloned-mode = 'Z'.
       APPEND ls_cloned TO at_cloned_tables.
     ENDIF.
+
+    CREATE DATA ldo_data TYPE TABLE OF hrp1000.
+    ASSIGN ldo_data->* TO <lt_itab>.
+
+    SELECT * FROM hrp1000 INTO TABLE <lt_itab>
+      WHERE plvar EQ '01'
+        AND otype EQ 'CP'
+        AND objid IN s_srtfd2.
+
+    IF <lt_itab>[] IS NOT INITIAL.
+      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+      APPEND lx TO at_xstrtab.
+      ls_cloned-index = sy-tabix.
+      ls_cloned-tabname = 'HRP1000'.
+      ls_cloned-mode = 'Z'.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
+
+
 
 
 
@@ -2431,15 +2494,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       APPEND ls_cloned TO at_cloned_tables.
     ENDIF.
 
-
-  ENDMETHOD.
-
-
-  METHOD READ_TEMP_T596M.
-
-    CHECK me->customizing-t596m IS NOT INITIAL.
-
-    CALL METHOD me->read_table_complete EXPORTING tabname = 'T596M'.
 
   ENDMETHOD.
 ENDCLASS.
