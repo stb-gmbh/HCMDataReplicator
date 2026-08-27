@@ -44,6 +44,7 @@ AT SELECTION-SCREEN ON VALUE-REQUEST FOR p_file.
   ENDIF.
 
 START-OF-SELECTION.
+  PERFORM check_mandt.
 
   PERFORM upload_clone_file.
 

@@ -294,7 +294,7 @@ FORM check_mandt .
     FROM t000
     WHERE mandt = @sy-mandt.
 
-  IF ls_t000-cccategory EQ 'P' AND sy-sysid NE 'H4D'.
+  IF ls_t000-cccategory EQ 'P'.
     CALL FUNCTION 'POPUP_TO_INFORM'
       EXPORTING
         titel = 'Abbruch'

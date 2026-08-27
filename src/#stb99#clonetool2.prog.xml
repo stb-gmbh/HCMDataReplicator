@@ -312,6 +312,12 @@
     </item>
     <item>
      <ID>I</ID>
+     <KEY>PUN</KEY>
+     <ENTRY>andere Daten</ENTRY>
+     <LENGTH>52</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
      <KEY>R2I</KEY>
      <ENTRY>schnelles Löschen von Personalnummern</ENTRY>
      <LENGTH>37</LENGTH>
@@ -507,13 +513,6 @@
      <KEY>P_LIST</KEY>
      <ENTRY>Liste Personalnummern</ENTRY>
      <LENGTH>29</LENGTH>
-    </item>
-    <item>
-     <ID>S</ID>
-     <KEY>P_LOHN</KEY>
-     <ENTRY>.</ENTRY>
-     <LENGTH>9</LENGTH>
-     <SPLIT>D</SPLIT>
     </item>
     <item>
      <ID>S</ID>

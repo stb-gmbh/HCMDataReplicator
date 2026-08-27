@@ -69,13 +69,13 @@ START-OF-SELECTION.
 
   s_pernr[] = lt_pernr[].
 
-  IF p_save IS NOT INITIAL AND p_del IS NOT INITIAL AND p_test IS INITIAL.
+  IF p_save IS NOT INITIAL AND
+     p_del IS NOT INITIAL AND
+     p_test IS INITIAL.
     PERFORM delete_target_pernr.
   ENDIF.
 
-  IF p_save IS NOT INITIAL.
-    PERFORM write_data_to_tables.
-  ENDIF.
+  PERFORM write_data_to_tables.
 
   IF p_down IS NOT INITIAL.
     PERFORM save_lt_xstring_to_file.
@@ -87,7 +87,7 @@ END-OF-SELECTION.
   WRITE:/ 'Programmlauf beendet.'.
 
   INCLUDE /stb99/clonetool2_forms.
-  FORM overwrite_customizing_with_sel .
+FORM overwrite_customizing_with_sel .
   p_custom-destination = p_dest.
 
   IF p_org   IS NOT INITIAL. p_custom-org   = p_org.   ENDIF.
@@ -106,7 +106,7 @@ END-OF-SELECTION.
   IF p_zs    IS NOT INITIAL. p_custom-zs    = p_zs.    ENDIF.
   IF p_bav   IS NOT INITIAL. p_custom-bav   = p_bav.   ENDIF.
   IF p_time  IS NOT INITIAL. p_custom-time  = p_time.  ENDIF.
-  IF p_lohn  IS NOT INITIAL. p_custom-lohn  = p_lohn.  ENDIF.
+*  IF p_lohn  IS NOT INITIAL. p_custom-lohn  = p_lohn.  ENDIF.
   IF p_trvl  IS NOT INITIAL. p_custom-trvl  = p_trvl.  ENDIF.
   IF p_a1    IS NOT INITIAL. p_custom-a1    = p_a1.    ENDIF.
   IF p_test  IS NOT INITIAL. p_custom-test  = p_test.  ENDIF.
