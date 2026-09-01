@@ -58,6 +58,7 @@ public section.
   methods READ_TABLE_B2A .
   methods READ_TABLE_UVM .
   methods READ_TABLE_RVBEA .
+  methods READ_TABLE_BEA .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -153,6 +154,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_meld_rvbeaforms.
 
     CALL METHOD me->READ_TABLE_RVBEA.
+    CALL METHOD me->READ_TABLE_BEA.
     CALL METHOD me->read_table_b2a.
     CALL METHOD me->read_meld_zs.
     CALL METHOD me->read_table_uvm.
@@ -2039,6 +2041,25 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         tabname = l_table.
 
 
+
+  ENDMETHOD.
+
+
+  METHOD READ_TABLE_BEA.
+    CHECK me->customizing-bea IS NOT INITIAL.
+
+    SELECT tabname
+      FROM dd02l
+      INTO @DATA(l_table)
+      WHERE ( tabname LIKE 'P01SV%')
+        AND as4local = 'A'
+        AND tabclass = 'TRANSP'.
+
+      CALL METHOD me->read_table_complete
+        EXPORTING
+          tabname = l_table.
+
+    ENDSELECT.
 
   ENDMETHOD.
 

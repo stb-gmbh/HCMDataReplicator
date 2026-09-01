@@ -387,6 +387,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_BEA</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_BEITR</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
@@ -565,6 +572,13 @@
     <item>
      <ID>S</ID>
      <KEY>P_RENT</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_RVBEA</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>

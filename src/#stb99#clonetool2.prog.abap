@@ -127,6 +127,7 @@ FORM overwrite_customizing_with_sel .
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
   IF p_rvBEA IS NOT INITIAL. p_custom-rvBEA = p_rvBEA. ENDIF.
+  IF p_BEA   IS NOT INITIAL. p_custom-BEA   = p_BEA.   ENDIF.
 
 ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
 *&---------------------------------------------------------------------*
