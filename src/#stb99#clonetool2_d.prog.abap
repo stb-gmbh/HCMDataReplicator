@@ -49,7 +49,7 @@ DATA:
   gt_result TYPE STANDARD TABLE OF ty_result,
   gs_result TYPE ty_result.
 
-CONSTANTS lc_chunk_size TYPE i VALUE 10485760.
+CONSTANTS lc_chunk_size TYPE i VALUE 20971520.
 
 TYPES:
   BEGIN OF ty_package_part,

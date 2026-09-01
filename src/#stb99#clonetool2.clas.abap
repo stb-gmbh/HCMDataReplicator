@@ -55,6 +55,9 @@ public section.
   methods READ_TABLE_WITH_PERNR
     importing
       !TABNAME type TABNAME .
+  methods READ_TABLE_B2A .
+  methods READ_TABLE_UVM .
+  methods READ_TABLE_RVBEA .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -148,6 +151,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_gos.
     CALL METHOD me->READ_MELD_DABPV.
     CALL METHOD me->read_meld_rvbeaforms.
+
+    CALL METHOD me->READ_TABLE_RVBEA.
+    CALL METHOD me->read_table_b2a.
+    CALL METHOD me->read_meld_zs.
+    CALL METHOD me->read_table_uvm.
 
     "versicheurngsnummer vav
     "KEG
@@ -942,27 +950,19 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   METHOD read_meld_zs.
     CHECK me->customizing-zs IS NOT INITIAL.
 
-    CONSTANTS: gui_tabname TYPE tabname VALUE 'P01ZS_STAT'.
+    SELECT tabname
+        FROM dd02l
+        INTO @DATA(l_table)
+        WHERE tabname LIKE 'P01ZS%'
+          AND as4local = 'A'
+          AND tabclass = 'TRANSP'.
 
-    CALL METHOD me->read_table_with_pernr EXPORTING tabname = gui_tabname.
+      CALL METHOD me->read_table_complete
+        EXPORTING
+          tabname = l_table.
+      ENDSELECT.
 
-    CLEAR add_guid_tabs[].
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_0700'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_AZKK'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_AZVU'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_DBBF'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_DBFE'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_HIST'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_INFT'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01ZS_MELD'.
-
-
-    CALL METHOD me->read_tables_meld_with_guid
-      EXPORTING
-        tab_guid = gui_tabname
-        add_tab  = add_guid_tabs.
-
-  ENDMETHOD.
+    ENDMETHOD.
 
 
   METHOD read_tables_additional.
@@ -2016,6 +2016,33 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD read_table_b2a.
+    CHECK me->customizing-b2a IS NOT INITIAL.
+
+    SELECT tabname
+      FROM dd02l
+      INTO @DATA(l_table)
+      WHERE tabname LIKE 'PB2A%'
+        AND as4local = 'A'
+        AND tabclass = 'TRANSP'.
+
+      CALL METHOD me->read_table_complete
+        EXPORTING
+          tabname = l_table.
+
+    ENDSELECT.
+
+    "Werma
+    l_table = 'T5D1I'.
+    CALL METHOD me->read_table_complete
+      EXPORTING
+        tabname = l_table.
+
+
+
+  ENDMETHOD.
+
+
   METHOD read_table_beitragsnachweise.
     CHECK me->customizing-beitr IS NOT INITIAL.
 
@@ -2457,6 +2484,25 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD read_table_rvbea.
+    CHECK me->customizing-rvbea IS NOT INITIAL.
+
+    SELECT tabname
+      FROM dd02l
+      INTO @DATA(l_table)
+      WHERE ( tabname LIKE 'P01RB%')
+        AND as4local = 'A'
+        AND tabclass = 'TRANSP'.
+
+      CALL METHOD me->read_table_complete
+        EXPORTING
+          tabname = l_table.
+
+    ENDSELECT.
+
+  ENDMETHOD.
+
+
   METHOD read_table_svzusatz.
 
     CHECK me->customizing-sv IS NOT INITIAL.
@@ -2470,6 +2516,29 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_KINDER'.
     CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_MLDAUFR'.
     CALL METHOD me->read_table_complete EXPORTING tabname = 'P01SV_MLDTRNS'.
+
+  ENDMETHOD.
+
+
+  METHOD read_table_uvm.
+    CHECK me->customizing-uvm IS NOT INITIAL.
+
+    SELECT tabname
+      FROM dd02l
+      INTO @data(l_table)
+      WHERE ( tabname LIKE 'P01UV%'
+           OR tabname LIKE 'P01SV%'
+           OR tabname LIKE 'PB2A%'
+           OR tabname LIKE 'PD3DBUV%'
+           OR tabname LIKE 'PD3DS%'
+           OR tabname LIKE 'HRD3%'
+           OR tabname LIKE 'PC01B2A%' )
+        AND as4local = 'A'
+        AND tabclass = 'TRANSP'.
+
+      me->read_table_complete( EXPORTING tabname = l_table ).
+
+    ENDSELECT.
 
   ENDMETHOD.
 

@@ -373,6 +373,13 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_B2A</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_BAV</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
@@ -599,6 +606,13 @@
     <item>
      <ID>S</ID>
      <KEY>P_TRVL</KEY>
+     <ENTRY>.</ENTRY>
+     <LENGTH>9</LENGTH>
+     <SPLIT>D</SPLIT>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_UVM</KEY>
      <ENTRY>.</ENTRY>
      <LENGTH>9</LENGTH>
      <SPLIT>D</SPLIT>
