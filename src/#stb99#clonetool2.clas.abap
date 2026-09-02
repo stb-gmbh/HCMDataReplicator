@@ -634,7 +634,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_IT2001'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_MELD_AU'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_NOTIFDAT'.
-    CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_PRES_PNR'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_STAT'.
     CALL METHOD me->add_guid_table EXPORTING table = 'P01_EAU_STRGDAT'.
 
@@ -643,6 +642,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
         tab_guid = gui_tabname
         add_tab  = add_guid_tabs.
 
+
+   CALL METHOD me->read_table_complete EXPORTING tabname = 'P01_EAU_PRES_PNR'.
 
 
 
