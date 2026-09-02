@@ -59,6 +59,10 @@ public section.
   methods READ_TABLE_UVM .
   methods READ_TABLE_RVBEA .
   methods READ_TABLE_BEA .
+  methods READ_B2A_TABLE_BY_B2AID
+    importing
+      !TABNAME type TABNAME
+      !RT_B2AID type /STB99/RG_B2AID_T .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -312,6 +316,38 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ENDIF.
 
     COMMIT WORK AND WAIT.
+
+  ENDMETHOD.
+
+
+  METHOD read_b2a_table_by_b2aid.
+    DATA: lx        TYPE xstring,
+          ldo_data  TYPE REF TO data,
+          ls_cloned TYPE /stb99/tables.
+
+    FIELD-SYMBOLS <lt_itab> TYPE table.
+
+    CHECK rt_b2aid IS NOT INITIAL.
+
+    CREATE DATA ldo_data TYPE TABLE OF (tabname).
+    ASSIGN ldo_data->* TO <lt_itab>.
+
+    SELECT *
+      FROM (tabname)
+      INTO TABLE <lt_itab>
+      WHERE b2aid IN rt_b2aid.
+
+    IF <lt_itab> IS NOT INITIAL.
+      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+
+      APPEND lx TO at_xstrtab.
+
+      ls_cloned-index   = sy-tabix.
+      ls_cloned-tabname = tabname.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
+
+
 
   ENDMETHOD.
 
@@ -2019,26 +2055,82 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_table_b2a.
+
+    CONSTANTS lc_date_from TYPE pb2astat-gdate VALUE '20220101'.
+
+    DATA: lt_pb2astat TYPE STANDARD TABLE OF pb2astat,
+          lt_pb2amgr  TYPE STANDARD TABLE OF pb2amgr,
+          lx          TYPE xstring,
+          ls_cloned   TYPE /stb99/tables.
+
+    DATA: lr_glbid TYPE RANGE OF pb2astat-glbid,
+          ls_glbid LIKE LINE OF lr_glbid,
+          lr_b2aid TYPE RANGE OF pb2amgr-b2aid,
+          ls_b2aid LIKE LINE OF lr_b2aid.
+
     CHECK me->customizing-b2a IS NOT INITIAL.
 
-    SELECT tabname
-      FROM dd02l
-      INTO @DATA(l_table)
-      WHERE tabname LIKE 'PB2A%'
-        AND as4local = 'A'
-        AND tabclass = 'TRANSP'.
+    SELECT *
+      FROM pb2astat
+      INTO TABLE lt_pb2astat
+      WHERE gdate >= lc_date_from.
 
-      CALL METHOD me->read_table_complete
-        EXPORTING
-          tabname = l_table.
+    CHECK lt_pb2astat IS NOT INITIAL.
 
-    ENDSELECT.
+    LOOP AT lt_pb2astat ASSIGNING FIELD-SYMBOL(<ls_stat>).
+      CLEAR ls_glbid.
+      ls_glbid-sign   = 'I'.
+      ls_glbid-option = 'EQ'.
+      ls_glbid-low    = <ls_stat>-glbid.
+      COLLECT ls_glbid INTO lr_glbid.
+    ENDLOOP.
 
-    "Werma
-    l_table = 'T5D1I'.
-    CALL METHOD me->read_table_complete
-      EXPORTING
-        tabname = l_table.
+    EXPORT p1 = lt_pb2astat TO DATA BUFFER lx.
+    APPEND lx TO at_xstrtab.
+    ls_cloned-index   = sy-tabix.
+    ls_cloned-tabname = 'PB2ASTAT'.
+    APPEND ls_cloned TO at_cloned_tables.
+
+    SELECT *
+      FROM pb2amgr
+      INTO TABLE lt_pb2amgr
+      WHERE glbid IN lr_glbid.
+
+    IF lt_pb2amgr IS NOT INITIAL.
+      EXPORT p1 = lt_pb2amgr TO DATA BUFFER lx.
+      APPEND lx TO at_xstrtab.
+      CLEAR ls_cloned.
+      ls_cloned-index   = sy-tabix.
+      ls_cloned-tabname = 'PB2AMGR'.
+      APPEND ls_cloned TO at_cloned_tables.
+
+      LOOP AT lt_pb2amgr ASSIGNING FIELD-SYMBOL(<ls_mgr>).
+        CLEAR ls_b2aid.
+        ls_b2aid-sign   = 'I'.
+        ls_b2aid-option = 'EQ'.
+        ls_b2aid-low    = <ls_mgr>-b2aid.
+        COLLECT ls_b2aid INTO lr_b2aid.
+      ENDLOOP.
+    ENDIF.
+
+    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
+      USING 'PB2ADATA' lr_b2aid
+      CHANGING at_xstrtab at_cloned_tables.
+
+    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
+      USING 'PB2ADATB' lr_b2aid
+      CHANGING at_xstrtab at_cloned_tables.
+
+    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
+      USING 'PB2ADATSTR' lr_b2aid
+      CHANGING at_xstrtab at_cloned_tables.
+
+    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
+      USING 'PB2ADATEMAIL' lr_b2aid
+      CHANGING at_xstrtab at_cloned_tables.
+
+    " Customizing/Steuertabellen weiterhin komplett, falls benötigt
+    me->read_table_complete( 'T5D1I' ).
 
 
 
@@ -2549,7 +2641,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       INTO @data(l_table)
       WHERE ( tabname LIKE 'P01UV%'
            OR tabname LIKE 'P01SV%'
-           OR tabname LIKE 'PB2A%'
            OR tabname LIKE 'PD3DBUV%'
            OR tabname LIKE 'PD3DS%'
            OR tabname LIKE 'HRD3%'
