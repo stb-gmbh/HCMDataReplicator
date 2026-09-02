@@ -2167,7 +2167,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ENDLOOP.
     ENDIF.
 
-
     me->read_b2a_table_by_bmsid(
       EXPORTING
         tabname  = 'PB2ADATB'
@@ -2176,8 +2175,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
     me->read_b2a_table_by_b2aid( tabname = 'PB2ADATSTR'       rt_b2aid = lr_b2aid ).
     me->read_b2a_table_by_b2aid( tabname = 'PB2ADATEMAIL'     rt_b2aid = lr_b2aid ).
-    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
-    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATXSTR'      rt_b2aid = lr_b2aid ).
+
     me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEM'     rt_b2aid = lr_b2aid ).
     me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEMSTAT' rt_b2aid = lr_b2aid ).
 

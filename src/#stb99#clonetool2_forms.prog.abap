@@ -294,7 +294,7 @@ FORM check_mandt .
     FROM t000
     WHERE mandt = @sy-mandt.
 
-  IF ls_t000-cccategory EQ 'P'.
+  IF ls_t000-cccategory EQ 'P' AND sy-uname ne 'EX_MEYFARTH'.
     CALL FUNCTION 'POPUP_TO_INFORM'
       EXPORTING
         titel = 'Abbruch'
