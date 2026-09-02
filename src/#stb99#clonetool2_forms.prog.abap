@@ -848,10 +848,10 @@ FORM write_gos .
     ENDIF.
   ENDLOOP.
 
-  IF p_test IS INITIAL.
+  IF p_test IS INITIAL AND p_det IS NOT INITIAL.
     PERFORM add_result
         USING ls_cloned-tabname 'G' l_lines l_size 0 0 'GOS angelegt'.
-  ELSE.
+  ELSEIF p_test IS NOT INITIAL AND p_det IS NOT INITIAL. .
     PERFORM add_result
           USING ls_cloned-tabname 'G' l_lines l_size 0 4 'GOS getestet'.
   ENDIF.

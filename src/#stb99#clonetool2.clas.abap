@@ -59,10 +59,7 @@ public section.
   methods READ_TABLE_UVM .
   methods READ_TABLE_RVBEA .
   methods READ_TABLE_BEA .
-  methods READ_B2A_TABLE_BY_B2AID
-    importing
-      !TABNAME type TABNAME
-      !RT_B2AID type /STB99/RG_B2AID_T .
+  methods READ_TABLE_B2A_PC01 .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -87,6 +84,18 @@ private section.
   methods READ_MELD_ZS .
   methods READ_MELD_DABPV .
   methods READ_MELD_RVBEAFORMS .
+  methods READ_B2A_TABLE_BY_B2AID
+    importing
+      !TABNAME type TABNAME
+      !RT_B2AID type /STB99/RG_B2AID_T .
+  methods READ_B2A_TABLE_BY_BMSID
+    importing
+      !TABNAME type TABNAME
+      !RT_BMSID type /STB99/RG_BMSID_T .
+  methods READ_TABLE_BY_GUID
+    importing
+      !TABNAME type TABNAME
+      !RT_GUID type /STB99/RG_GUID_T .
 ENDCLASS.
 
 
@@ -160,6 +169,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->READ_TABLE_RVBEA.
     CALL METHOD me->READ_TABLE_BEA.
     CALL METHOD me->read_table_b2a.
+    CALL METHOD me->read_table_b2a_pc01.
     CALL METHOD me->read_meld_zs.
     CALL METHOD me->read_table_uvm.
 
@@ -336,6 +346,38 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       FROM (tabname)
       INTO TABLE <lt_itab>
       WHERE b2aid IN rt_b2aid.
+
+    IF <lt_itab> IS NOT INITIAL.
+      EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+
+      APPEND lx TO at_xstrtab.
+
+      ls_cloned-index   = sy-tabix.
+      ls_cloned-tabname = tabname.
+      APPEND ls_cloned TO at_cloned_tables.
+    ENDIF.
+
+
+
+  ENDMETHOD.
+
+
+  METHOD READ_B2A_TABLE_BY_BMSID.
+    DATA: lx        TYPE xstring,
+          ldo_data  TYPE REF TO data,
+          ls_cloned TYPE /stb99/tables.
+
+    FIELD-SYMBOLS <lt_itab> TYPE table.
+
+    CHECK rt_bmsid IS NOT INITIAL.
+
+    CREATE DATA ldo_data TYPE TABLE OF (tabname).
+    ASSIGN ldo_data->* TO <lt_itab>.
+
+    SELECT *
+      FROM (tabname)
+      INTO TABLE <lt_itab>
+      WHERE bmsid IN rt_bmsid.
 
     IF <lt_itab> IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -2067,6 +2109,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
           ls_glbid LIKE LINE OF lr_glbid,
           lr_b2aid TYPE RANGE OF pb2amgr-b2aid,
           ls_b2aid LIKE LINE OF lr_b2aid.
+    DATA:
+      lr_bmsid TYPE RANGE OF pb2astat-bmsid,
+      ls_bmsid LIKE LINE OF lr_bmsid.
+
 
     CHECK me->customizing-b2a IS NOT INITIAL.
 
@@ -2083,6 +2129,14 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ls_glbid-option = 'EQ'.
       ls_glbid-low    = <ls_stat>-glbid.
       COLLECT ls_glbid INTO lr_glbid.
+
+      IF <ls_stat>-bmsid IS NOT INITIAL.
+        CLEAR ls_bmsid.
+        ls_bmsid-sign   = 'I'.
+        ls_bmsid-option = 'EQ'.
+        ls_bmsid-low    = <ls_stat>-bmsid.
+        COLLECT ls_bmsid INTO lr_bmsid.
+      ENDIF.
     ENDLOOP.
 
     EXPORT p1 = lt_pb2astat TO DATA BUFFER lx.
@@ -2113,26 +2167,86 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       ENDLOOP.
     ENDIF.
 
-    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
-      USING 'PB2ADATA' lr_b2aid
-      CHANGING at_xstrtab at_cloned_tables.
 
-    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
-      USING 'PB2ADATB' lr_b2aid
-      CHANGING at_xstrtab at_cloned_tables.
+    me->read_b2a_table_by_bmsid(
+      EXPORTING
+        tabname  = 'PB2ADATB'
+        rt_bmsid = lr_bmsid ).
 
-    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
-      USING 'PB2ADATSTR' lr_b2aid
-      CHANGING at_xstrtab at_cloned_tables.
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATSTR'       rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATEMAIL'     rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PB2ADATA'         rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEM'     rt_b2aid = lr_b2aid ).
+    me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEMSTAT' rt_b2aid = lr_b2aid ).
 
-    PERFORM read_b2a_table_by_b2aid IN PROGRAM /stb99/clonetool2
-      USING 'PB2ADATEMAIL' lr_b2aid
-      CHANGING at_xstrtab at_cloned_tables.
-
-    " Customizing/Steuertabellen weiterhin komplett, falls benötigt
     me->read_table_complete( 'T5D1I' ).
 
 
+
+  ENDMETHOD.
+
+
+  METHOD read_table_b2a_pc01.
+
+    CHECK me->customizing-b2a IS NOT INITIAL.
+
+    DATA:
+      lr_data   TYPE REF TO data,
+      lx        TYPE xstring,
+      ls_cloned TYPE /stb99/tables,
+      lr_guid   TYPE /stb99/rg_guid_t,
+      ls_guid   TYPE /stb99/rg_guid_s.
+
+    FIELD-SYMBOLS:
+      <lt_p_st> TYPE table,
+      <ls_p_st> TYPE any,
+      <lv_guid> TYPE hrpayde_guid.
+
+    " Starttabelle lesen
+    CREATE DATA lr_data TYPE TABLE OF pc01b2a_sv_p_st.
+    ASSIGN lr_data->* TO <lt_p_st>.
+    CHECK sy-subrc = 0.
+
+    SELECT *
+      FROM pc01b2a_sv_p_st
+      INTO TABLE <lt_p_st>.
+
+    CHECK <lt_p_st> IS NOT INITIAL.
+
+    " PC01B2A_SV_P_ST selbst in das Clone-Ergebnis übernehmen
+    EXPORT p1 = <lt_p_st> TO DATA BUFFER lx.
+    APPEND lx TO at_xstrtab.
+
+    CLEAR ls_cloned.
+    ls_cloned-index   = lines( at_xstrtab ).
+    ls_cloned-tabname = 'PC01B2A_SV_P_ST'.
+    APPEND ls_cloned TO at_cloned_tables.
+
+    " GUIDs sammeln
+    LOOP AT <lt_p_st> ASSIGNING <ls_p_st>.
+      ASSIGN COMPONENT 'GUID' OF STRUCTURE <ls_p_st> TO <lv_guid>.
+      CHECK sy-subrc = 0.
+      CHECK <lv_guid> IS NOT INITIAL.
+
+      CLEAR ls_guid.
+      ls_guid-sign   = 'I'.
+      ls_guid-option = 'EQ'.
+      ls_guid-low    = <lv_guid>.
+      COLLECT ls_guid INTO lr_guid.
+    ENDLOOP.
+
+    CHECK lr_guid IS NOT INITIAL.
+
+    " Alle Kandidaten lesen, aber nur wenn Feld GUID existiert
+    me->read_table_by_guid( tabname = 'PC01B2A_SV_CON'   rt_guid = lr_guid ).
+    me->read_table_by_guid( tabname = 'PC01B2A_SV_MSG'   rt_guid = lr_guid ).
+    me->read_table_by_guid( tabname = 'PC01B2A_SV_P_HI'  rt_guid = lr_guid ).
+    me->read_table_by_guid( tabname = 'PC01B2A_SV_PACKS' rt_guid = lr_guid ).
+    me->read_table_by_guid( tabname = 'PC01B2A_SV_REQ'   rt_guid = lr_guid ).
+
+    me->read_table_complete( tabname = 'PC01B2A_SV_IN' ).
 
   ENDMETHOD.
 
@@ -2188,6 +2302,50 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   ENDMETHOD.
+
+
+METHOD read_table_by_guid.
+
+  DATA:
+    lr_data   TYPE REF TO data,
+    lx        TYPE xstring,
+    ls_cloned TYPE /stb99/tables.
+
+  FIELD-SYMBOLS:
+    <lt_itab> TYPE table.
+
+  CHECK rt_guid IS NOT INITIAL.
+
+  " Nur Tabellen lesen, die wirklich ein Feld GUID haben
+  SELECT SINGLE fieldname
+    FROM dd03l
+    INTO @DATA(lv_fieldname)
+    WHERE tabname   = @tabname
+      AND fieldname = 'GUID'
+      AND as4local  = 'A'.
+
+  CHECK sy-subrc = 0.
+
+  CREATE DATA lr_data TYPE TABLE OF (tabname).
+  ASSIGN lr_data->* TO <lt_itab>.
+  CHECK sy-subrc = 0.
+
+  SELECT *
+    FROM (tabname)
+    INTO TABLE <lt_itab>
+    WHERE guid IN rt_guid.
+
+  CHECK <lt_itab> IS NOT INITIAL.
+
+  EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
+  APPEND lx TO at_xstrtab.
+
+  CLEAR ls_cloned.
+  ls_cloned-index   = lines( at_xstrtab ).
+  ls_cloned-tabname = tabname.
+  APPEND ls_cloned TO at_cloned_tables.
+
+ENDMETHOD.
 
 
   METHOD read_table_complete.
@@ -2640,11 +2798,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       FROM dd02l
       INTO @data(l_table)
       WHERE ( tabname LIKE 'P01UV%'
-           OR tabname LIKE 'P01SV%'
-           OR tabname LIKE 'PD3DBUV%'
-           OR tabname LIKE 'PD3DS%'
-           OR tabname LIKE 'HRD3%'
-           OR tabname LIKE 'PC01B2A%' )
+           OR tabname LIKE 'P01SV%' )
         AND as4local = 'A'
         AND tabclass = 'TRANSP'.
 
