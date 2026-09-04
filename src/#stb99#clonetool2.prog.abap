@@ -124,6 +124,8 @@ FORM overwrite_customizing_with_sel .
   IF p_rvbf  IS NOT INITIAL. p_custom-rvbf  = p_rvbf.  ENDIF.
   IF p_gos   IS NOT INITIAL. p_custom-gos   = p_gos.   ENDIF.
   IF p_b2a   IS NOT INITIAL. p_custom-b2a   = p_b2a.   ENDIF.
+  IF p_b2begd IS NOT INITIAL. p_custom-b2begd   = p_b2begd.   ENDIF.
+  IF p_b2endd IS NOT INITIAL. p_custom-b2endd   = p_b2endd.   ENDIF.
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
   IF p_rvBEA IS NOT INITIAL. p_custom-rvBEA = p_rvBEA. ENDIF.

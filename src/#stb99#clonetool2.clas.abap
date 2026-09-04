@@ -42,6 +42,9 @@ public section.
   methods READ_TABLES_TIME .
   methods READ_TABLES_TRVL .
   methods READ_TABLE_ARBEITGEBERKONTO .
+  methods READ_TABLE_B2A .
+  methods READ_TABLE_B2A_PC01 .
+  methods READ_TABLE_BEA .
   methods READ_TABLE_BEITRAGSNACHWEISE .
   methods READ_TABLE_BETRIEBSDATENPFL .
   methods READ_TABLE_COMPLETE
@@ -51,15 +54,12 @@ public section.
   methods READ_TABLE_GOS .
   methods READ_TABLE_LSTA .
   methods READ_TABLE_RENTENUEBERSICHT .
+  methods READ_TABLE_RVBEA .
   methods READ_TABLE_SVZUSATZ .
+  methods READ_TABLE_UVM .
   methods READ_TABLE_WITH_PERNR
     importing
       !TABNAME type TABNAME .
-  methods READ_TABLE_B2A .
-  methods READ_TABLE_UVM .
-  methods READ_TABLE_RVBEA .
-  methods READ_TABLE_BEA .
-  methods READ_TABLE_B2A_PC01 .
   PROTECTED SECTION.
 *"* protected components of class /STB99/CLONETOOL2
 *"* do not include other source files here!!!
@@ -70,8 +70,17 @@ private section.
   data AT_XSTRTAB type /STB99/XTAB .
   data AT_INFTY type /STB99/STB_INFTY_RANGE_T .
 
+  methods READ_B2A_TABLE_BY_B2AID
+    importing
+      !TABNAME type TABNAME
+      !RT_B2AID type /STB99/RG_B2AID_T .
+  methods READ_B2A_TABLE_BY_BMSID
+    importing
+      !TABNAME type TABNAME
+      !RT_BMSID type /STB99/RG_BMSID_T .
   methods READ_MELD_A1 .
   methods READ_MELD_BV .
+  methods READ_MELD_DABPV .
   methods READ_MELD_DEUEV .
   methods READ_MELD_EA .
   methods READ_MELD_EAU .
@@ -81,17 +90,8 @@ private section.
   methods READ_MELD_KRANKENKASSEN .
   methods READ_MELD_LSTB .
   methods READ_MELD_RBM .
-  methods READ_MELD_ZS .
-  methods READ_MELD_DABPV .
   methods READ_MELD_RVBEAFORMS .
-  methods READ_B2A_TABLE_BY_B2AID
-    importing
-      !TABNAME type TABNAME
-      !RT_B2AID type /STB99/RG_B2AID_T .
-  methods READ_B2A_TABLE_BY_BMSID
-    importing
-      !TABNAME type TABNAME
-      !RT_BMSID type /STB99/RG_BMSID_T .
+  methods READ_MELD_ZS .
   methods READ_TABLE_BY_GUID
     importing
       !TABNAME type TABNAME
@@ -165,7 +165,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_gos.
     CALL METHOD me->READ_MELD_DABPV.
     CALL METHOD me->read_meld_rvbeaforms.
-
+    CALL METHOD me->read_meld_krankenkassen.
     CALL METHOD me->READ_TABLE_RVBEA.
     CALL METHOD me->READ_TABLE_BEA.
     CALL METHOD me->read_table_b2a.
@@ -848,6 +848,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD read_meld_krankenkassen.
+    CHECK me->customizing-krank IS NOT INITIAL.
+
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_ADMIN_01'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DBAE'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DBAL'.
@@ -862,6 +864,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DBZE'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DBZK'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DSLW'.
+
+
+    me->read_table_complete( 'T5D1I' ).
+
+
   ENDMETHOD.
 
 
@@ -2120,7 +2127,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     SELECT *
       FROM pb2astat
       INTO TABLE lt_pb2astat
-      WHERE gdate >= lc_date_from.
+      WHERE gdate BETWEEN me->customizing-b2begd AND me->customizing-b2endd.
 
     CHECK lt_pb2astat IS NOT INITIAL.
 
@@ -2181,9 +2188,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEM'     rt_b2aid = lr_b2aid ).
     me->read_b2a_table_by_b2aid( tabname = 'PC01B2A_SVEMSTAT' rt_b2aid = lr_b2aid ).
 
-    me->read_table_complete( 'T5D1I' ).
-
-
 
   ENDMETHOD.
 
@@ -2211,7 +2215,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     SELECT *
       FROM pc01b2a_sv_p_st
-      INTO TABLE <lt_p_st>.
+      INTO TABLE <lt_p_st>
+      WHERE datum BETWEEN me->customizing-b2begd AND me->customizing-b2begd.
 
     CHECK <lt_p_st> IS NOT INITIAL.
 
