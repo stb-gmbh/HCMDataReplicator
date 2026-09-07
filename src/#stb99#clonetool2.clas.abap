@@ -2216,7 +2216,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     SELECT *
       FROM pc01b2a_sv_p_st
       INTO TABLE <lt_p_st>
-      WHERE datum BETWEEN me->customizing-b2begd AND me->customizing-b2begd.
+      WHERE datum BETWEEN me->customizing-b2begd AND me->customizing-b2endd.
 
     CHECK <lt_p_st> IS NOT INITIAL.
 
