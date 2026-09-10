@@ -569,7 +569,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
   METHOD read_meld_deuev.
     CHECK me->customizing-deuv IS NOT INITIAL.
 
-    CONSTANTS: gui_tabname TYPE tabname VALUE 'P01ZS_STAT'.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBAN'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBEU'.
@@ -586,7 +585,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3HIST'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBUV'.
 
+    DATA: l_table TYPE tabname.
 
+    SELECT tabname FROM dd02l INTO l_table WHERE tabname LIKE 'P01D3%' AND as4local EQ 'A' AND tabclass EQ 'TRANSP'.
+      CALL METHOD me->read_table_complete EXPORTING tabname = l_table.
+    ENDSELECT.
 
   ENDMETHOD.
 
