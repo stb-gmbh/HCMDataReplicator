@@ -578,12 +578,16 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBME'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBNA'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBSO'.
-* CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBS'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DSAP'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DSME'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3FLAG'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3HIST'.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBUV'.
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBGE'.
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBST'.
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBSV'.
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DBUV_DAT'.
+    CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'PD3DSFZ'.
 
     DATA: l_table TYPE tabname.
 
