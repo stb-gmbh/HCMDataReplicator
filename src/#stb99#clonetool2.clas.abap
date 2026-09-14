@@ -96,6 +96,7 @@ private section.
     importing
       !TABNAME type TABNAME
       !RT_GUID type /STB99/RG_GUID_T .
+  methods READ_WERMA .
 ENDCLASS.
 
 
@@ -130,9 +131,9 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       APPEND ls_pernr TO at_pernr.
     ENDSELECT.
 
-    if at_pernr[] IS INITIAL.
-      raise nothing_selected.
-    endif.
+    IF at_pernr[] IS INITIAL.
+      RAISE nothing_selected.
+    ENDIF.
 
     "Parameter von Quellsystem (welche Verfahren etc.)
     at_infty[] = gr_infty[].
@@ -163,15 +164,21 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_rentenuebersicht. ""Meldeverfahren Rentenübersicht
     CALL METHOD me->read_table_eubp.
     CALL METHOD me->read_table_gos.
-    CALL METHOD me->READ_MELD_DABPV.
+    CALL METHOD me->read_meld_dabpv.
     CALL METHOD me->read_meld_rvbeaforms.
     CALL METHOD me->read_meld_krankenkassen.
-    CALL METHOD me->READ_TABLE_RVBEA.
-    CALL METHOD me->READ_TABLE_BEA.
+    CALL METHOD me->read_table_rvbea.
+    CALL METHOD me->read_table_bea.
     CALL METHOD me->read_table_b2a.
     CALL METHOD me->read_table_b2a_pc01.
     CALL METHOD me->read_meld_zs.
     CALL METHOD me->read_table_uvm.
+
+
+    IF sy-sysid EQ 'H4D' OR sy-sysid EQ 'H4P'.
+      CALL METHOD me->read_werma.
+    ENDIF.
+
 
     "versicheurngsnummer vav
     "KEG
@@ -873,7 +880,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'P01W_DSLW'.
 
 
-    me->read_table_complete( 'T5D1I' ).
 
 
   ENDMETHOD.
@@ -2845,4 +2851,12 @@ ENDMETHOD.
 
 
   ENDMETHOD.
+
+
+  method READ_WERMA.
+    CHECK sy-uname eq 'EX_MEYFARTH'.
+
+    me->read_table_complete( 'T5D4U' ).
+
+  endmethod.
 ENDCLASS.
