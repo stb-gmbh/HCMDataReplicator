@@ -175,7 +175,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_uvm.
 
 
-    IF sy-sysid EQ 'H4D' OR sy-sysid EQ 'H4P'.
+    IF sy-sysid EQ 'H4D' OR sy-sysid EQ 'H4P' OR sy-sysid EQ 'P10'.
       CALL METHOD me->read_werma.
     ENDIF.
 
