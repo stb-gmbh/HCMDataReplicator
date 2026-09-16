@@ -96,7 +96,6 @@ private section.
     importing
       !TABNAME type TABNAME
       !RT_GUID type /STB99/RG_GUID_T .
-  methods READ_WERMA .
 ENDCLASS.
 
 
@@ -173,12 +172,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     CALL METHOD me->read_table_b2a_pc01.
     CALL METHOD me->read_meld_zs.
     CALL METHOD me->read_table_uvm.
-
-
-    IF sy-sysid EQ 'H4D' OR sy-sysid EQ 'H4P' OR sy-sysid EQ 'P10'.
-      CALL METHOD me->read_werma.
-    ENDIF.
-
 
     "versicheurngsnummer vav
     "KEG
@@ -1083,6 +1076,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     DATA: s_pdsnr TYPE /stb99/range_pdsnr_t,
           l_pdsnr TYPE /stb99/range_pdsnr.
 
+    CHECK me->customizing-calc IS NOT INITIAL.
 
     CALL METHOD me->read_table_with_pernr EXPORTING tabname = 'ASSHR'.
 
@@ -1174,7 +1168,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     DATA: ls_pernr LIKE LINE OF at_pernr.
 
-
+    "Cluster aus eigener Tabelle und Aufbau Selektion
     SELECT * FROM /stb99/clst INTO @DATA(ls_clst).
       CASE ls_clst-tabname.
         WHEN 'PCL1'.
@@ -1213,10 +1207,44 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       "Tabelle mit tabname und relid und srtfd lesen
       CREATE DATA ldo_data TYPE TABLE OF (ls_clst-tabname).
       ASSIGN ldo_data->* TO <lt_itab>.
-      " Daten selektieren
-      SELECT * FROM (ls_clst-tabname) INTO TABLE <lt_itab>
-        WHERE relid EQ ls_clst-relid
-          AND srtfd IN s_srtfd.
+      REFRESH <lt_itab>.
+
+      DATA:
+        lt_srtfd_pack TYPE /stb99/range_srtfd_t,
+        lv_count      TYPE i.
+
+
+      FIELD-SYMBOLS <ls_srtfd> LIKE LINE OF s_srtfd.
+
+      CLEAR lt_srtfd_pack.
+
+      "in Paketen mit 50 Pernr lesen
+      LOOP AT s_srtfd ASSIGNING <ls_srtfd>.
+
+        APPEND <ls_srtfd> TO lt_srtfd_pack.
+        lv_count = lv_count + 1.
+
+        IF lv_count >= 50.
+          SELECT *
+            FROM (ls_clst-tabname)
+            APPENDING TABLE <lt_itab>
+            WHERE relid = ls_clst-relid
+              AND srtfd IN lt_srtfd_pack.
+
+          CLEAR lt_srtfd_pack.
+          CLEAR lv_count.
+        ENDIF.
+
+      ENDLOOP.
+
+      "rest noch lesen
+      IF lt_srtfd_pack IS NOT INITIAL.
+        SELECT *
+          FROM (ls_clst-tabname)
+          APPENDING TABLE <lt_itab>
+          WHERE relid = ls_clst-relid
+            AND srtfd IN lt_srtfd_pack.
+      ENDIF.
 
       IF <lt_itab>[] IS NOT INITIAL.
         EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -2851,12 +2879,4 @@ ENDMETHOD.
 
 
   ENDMETHOD.
-
-
-  method READ_WERMA.
-    CHECK sy-uname eq 'EX_MEYFARTH'.
-
-    me->read_table_complete( 'T5D4U' ).
-
-  endmethod.
 ENDCLASS.
