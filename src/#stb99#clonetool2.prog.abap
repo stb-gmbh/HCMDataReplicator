@@ -31,6 +31,7 @@ START-OF-SELECTION.
 *     percentage = 10
       text = |Die Daten werden gelesen...|.
 
+
   TRY.
       CALL FUNCTION '/STB99/CLONE_DATA'
         DESTINATION p_dest

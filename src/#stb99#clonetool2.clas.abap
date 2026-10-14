@@ -10,6 +10,7 @@ public section.
   data CUSTOMIZING type /STB99/CT2_CUST .
   data TX_SRTFD type /STB99/RANGE_SRTFD_T .
   data ADD_GUID_TABS type IQTRTAB .
+  data AT_PERNR type /STB99/RANGE_PERNR_T .
 
   methods ADD_GUID_TABLE
     importing
@@ -23,6 +24,9 @@ public section.
       !XSTRTAB type /STB99/XTAB
     exceptions
       NOTHING_SELECTED .
+  methods GET_SELECTED_PERNR
+    changing
+      !S_PERNR type /STB99/RANGE_PERNR_T .
   methods CONSTRUCTOR .
   methods READ_FIELDS_WITH_PERNR
     importing
@@ -65,7 +69,6 @@ public section.
 *"* do not include other source files here!!!
 private section.
 
-  data AT_PERNR type /STB99/RANGE_PERNR_T .
   data AT_CLONED_TABLES type /STB99/TABLES_T .
   data AT_XSTRTAB type /STB99/XTAB .
   data AT_INFTY type /STB99/STB_INFTY_RANGE_T .
@@ -118,17 +121,6 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
 
   METHOD clone.
-
-    DATA: ls_pernr LIKE LINE OF at_pernr.
-
-    "Personalnummern ermitteln
-    CLEAR at_pernr[].
-    SELECT pernr FROM pa0003 INTO ls_pernr-low WHERE pernr IN s_pernr
-      ORDER BY pernr ASCENDING.
-      ls_pernr-sign = 'I'.
-      ls_pernr-option = 'EQ'.
-      APPEND ls_pernr TO at_pernr.
-    ENDSELECT.
 
     IF at_pernr[] IS INITIAL.
       RAISE nothing_selected.
@@ -328,6 +320,22 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     COMMIT WORK AND WAIT.
 
   ENDMETHOD.
+
+
+  method GET_SELECTED_PERNR.
+    DATA: ls_pernr LIKE LINE OF at_pernr.
+    "Personalnummern ermitteln
+    CLEAR at_pernr[].
+    SELECT pernr FROM pa0003 INTO ls_pernr-low WHERE pernr IN s_pernr
+      ORDER BY pernr ASCENDING.
+      ls_pernr-sign = 'I'.
+      ls_pernr-option = 'EQ'.
+      APPEND ls_pernr TO at_pernr.
+    ENDSELECT.
+
+    s_pernr[] = at_pernr[].
+
+  endmethod.
 
 
   METHOD read_b2a_table_by_b2aid.
@@ -1170,6 +1178,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     "Cluster aus eigener Tabelle und Aufbau Selektion
     SELECT * FROM /stb99/clst INTO @DATA(ls_clst).
+
+      REFRESH s_srtfd.
+      CLEAR l_srtfd.
+
       CASE ls_clst-tabname.
         WHEN 'PCL1'.
           CASE ls_clst-relid.
@@ -1279,6 +1291,10 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
     ENDSELECT.
 
+REFRESH s_srtfd.
+CLEAR l_srtfd.
+
+
     "Zentrale Personen
     CREATE DATA ldo_data TYPE TABLE OF hrp1000.
     ASSIGN ldo_data->* TO <lt_itab>.
@@ -1286,7 +1302,7 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     SELECT * FROM hrp1000 INTO TABLE <lt_itab>
       WHERE plvar EQ '01'
         AND otype EQ 'P'
-        AND objid IN s_srtfd.
+        AND objid IN at_pernr.
 
     IF <lt_itab>[] IS NOT INITIAL.
       EXPORT p1 = <lt_itab> TO DATA BUFFER lx.
@@ -1301,8 +1317,8 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
     ASSIGN ldo_data->* TO <lt_itab>.
 
     SELECT * FROM hrp1001 INTO TABLE <lt_itab>
-      WHERE plvar EQ '01' AND ( ( otype EQ 'P'  AND sclas EQ 'CP' AND objid IN s_srtfd ) OR
-                                ( otype EQ 'CP' AND sclas EQ 'P'  AND sobid IN s_srtfd )
+      WHERE plvar EQ '01' AND ( ( otype EQ 'P'  AND sclas EQ 'CP' AND objid IN at_pernr ) OR
+                                ( otype EQ 'CP' AND sclas EQ 'P'  AND sobid IN at_pernr )
                               ).
 
     "Zentrale Personen sammeln
