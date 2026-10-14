@@ -31,54 +31,119 @@ START-OF-SELECTION.
 *     percentage = 10
       text = |Personalnummern werden ermittelt...|.
 
+  DATA: lt_pernr_block   LIKE lt_pernr,
+        lt_cloned_block  LIKE lt_cloned,
+        lt_xstring_block LIKE lt_xstring,
+        lv_from          TYPE i,
+        lv_to            TYPE i,
+        lv_total         TYPE i,
+        lv_offset        TYPE i.
+
   CALL FUNCTION '/STB99/GET_PERNR'
     DESTINATION p_dest
     EXPORTING
-      p_custom = p_custom
+      p_custom              = p_custom
     CHANGING
-      s_pernr  = lt_pernr.
+      s_pernr               = lt_pernr
+    EXCEPTIONS
+      communication_failure = 1 MESSAGE lv_msg
+      system_failure        = 2 MESSAGE lv_msg
+      OTHERS                = 3.
+
+  CASE sy-subrc.
+    WHEN 1 OR 2.
+      MESSAGE lv_msg TYPE 'E'.
+    WHEN 3.
+      MESSAGE 'Personalnummern konnten nicht ermittelt werden.' TYPE 'E'.
+  ENDCASE.
+
+  IF lt_pernr IS INITIAL.
+    MESSAGE 'Keine Personalnummern gefunden.' TYPE 'E'.
+  ENDIF.
+
+  CLEAR: lt_cloned, lt_xstring.
+
+  lv_total = lines( lt_pernr ).
+  lv_from = 1.
+
+  WHILE lv_from <= lv_total.
+
+    lv_to = lv_from + 9.
+    IF lv_to > lv_total.
+      lv_to = lv_total.
+    ENDIF.
+
+    CLEAR: lt_pernr_block,
+           lt_cloned_block,
+           lt_xstring_block,
+           lv_msg.
+
+    APPEND LINES OF lt_pernr
+      FROM lv_from TO lv_to
+      TO lt_pernr_block.
+
+    CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+      EXPORTING
+        percentage = lv_to * 100 / lv_total
+        text       = |Daten lesen: Personalnummern { lv_from } bis { lv_to } von { lv_total }|.
+
+    TRY.
+        CALL FUNCTION '/STB99/CLONE_DATA'
+          DESTINATION p_dest
+          EXPORTING
+            p_custom              = p_custom
+            gr_infty              = gr_infty
+          IMPORTING
+            xstrtab               = lt_xstring_block
+            cloned_tables         = lt_cloned_block
+          CHANGING
+            s_pernr               = lt_pernr_block
+          EXCEPTIONS
+            no_data               = 1
+            nothingselected       = 2
+            communication_failure = 3 MESSAGE lv_msg
+            system_failure        = 4 MESSAGE lv_msg
+            OTHERS                = 5.
+
+        CASE sy-subrc.
+          WHEN 0.
+            "Index auf die Position in der Gesamttabelle umrechnen
+            lv_offset = lines( lt_xstring ).
+
+            LOOP AT lt_cloned_block ASSIGNING FIELD-SYMBOL(<ls_cloned_block>).
+              <ls_cloned_block>-index =
+                <ls_cloned_block>-index + lv_offset.
+            ENDLOOP.
+
+            APPEND LINES OF lt_xstring_block TO lt_xstring.
+            APPEND LINES OF lt_cloned_block TO lt_cloned.
+
+          WHEN 1.
+            MESSAGE 'Keine Daten gefunden.' TYPE 'E'.
+
+          WHEN 2.
+            MESSAGE 'Nichts selektiert.' TYPE 'E'.
+
+          WHEN 3 OR 4.
+            MESSAGE lv_msg TYPE 'E'.
+
+          WHEN OTHERS.
+            MESSAGE 'Fehler beim Lesen der Clone-Daten.' TYPE 'E'.
+        ENDCASE.
+
+      CATCH cx_root INTO DATA(lx_root).
+        MESSAGE lx_root->get_text( ) TYPE 'E'.
+    ENDTRY.
+
+    lv_from = lv_to + 1.
+
+  ENDWHILE.
+
+  FREE: lt_pernr_block, lt_cloned_block, lt_xstring_block.
 
 
-  CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
-    EXPORTING
-*     percentage = 10
-      text = |Die Daten werden gelesen...|.
 
-  TRY.
-      CALL FUNCTION '/STB99/CLONE_DATA'
-        DESTINATION p_dest
-        EXPORTING
-          p_custom              = p_custom
-          gr_infty              = gr_infty
-        IMPORTING
-          xstrtab               = lt_xstring
-          cloned_tables         = lt_cloned
-        CHANGING
-          s_pernr               = lt_pernr
-        EXCEPTIONS
-          no_data               = 1
-          nothingselected       = 2
-          communication_failure = 3 MESSAGE lv_msg
-          system_failure        = 4 MESSAGE lv_msg.
 
-      CASE sy-subrc.
-        WHEN 0.
-          "alles ok
-
-        WHEN 1.
-          MESSAGE 'Keine Daten gefunden.' TYPE 'E'.
-
-        WHEN 2.
-          MESSAGE 'Nichts selektiert.' TYPE 'E'.
-
-        WHEN 3 OR 4.
-          MESSAGE lv_msg TYPE 'E'.
-      ENDCASE.
-
-    CATCH cx_root INTO DATA(lx_root).
-      MESSAGE lx_root->get_text( ) TYPE 'E'.
-
-  ENDTRY.
 
   s_pernr[] = lt_pernr[].
 
