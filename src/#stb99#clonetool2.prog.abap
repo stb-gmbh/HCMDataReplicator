@@ -29,8 +29,20 @@ START-OF-SELECTION.
   CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
     EXPORTING
 *     percentage = 10
-      text = |Die Daten werden gelesen...|.
+      text = |Personalnummern werden ermittelt...|.
 
+  CALL FUNCTION '/STB99/GET_PERNR'
+    DESTINATION p_dest
+    EXPORTING
+      p_custom = p_custom
+    CHANGING
+      s_pernr  = lt_pernr.
+
+
+  CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+    EXPORTING
+*     percentage = 10
+      text = |Die Daten werden gelesen...|.
 
   TRY.
       CALL FUNCTION '/STB99/CLONE_DATA'
@@ -129,8 +141,8 @@ FORM overwrite_customizing_with_sel .
   IF p_b2endd IS NOT INITIAL. p_custom-b2endd   = p_b2endd.   ENDIF.
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
   IF p_uvm   IS NOT INITIAL. p_custom-uvm   = p_uvm.   ENDIF.
-  IF p_rvBEA IS NOT INITIAL. p_custom-rvBEA = p_rvBEA. ENDIF.
-  IF p_BEA   IS NOT INITIAL. p_custom-BEA   = p_BEA.   ENDIF.
+  IF p_rvbea IS NOT INITIAL. p_custom-rvbea = p_rvbea. ENDIF.
+  IF p_bea   IS NOT INITIAL. p_custom-bea   = p_bea.   ENDIF.
 
 ENDFORM.                    " OVERWRITE_CUSTOMIZING_WITH_SEL
 *&---------------------------------------------------------------------*

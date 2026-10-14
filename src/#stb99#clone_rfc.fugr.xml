@@ -83,6 +83,52 @@
       </RSFDO>
      </DOCUMENTATION>
     </item>
+    <item>
+     <FUNCNAME>/STB99/GET_PERNR</FUNCNAME>
+     <REMOTE_CALL>R</REMOTE_CALL>
+     <SHORT_TEXT>Zugriff auf Quellsystem</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>P_CUSTOM</PARAMETER>
+       <TYP>/STB99/CT2_CUST</TYP>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>S_PERNR</PARAMETER>
+       <TYP>/STB99/RANGE_PERNR_T</TYP>
+      </RSCHA>
+     </CHANGING>
+     <EXCEPTION>
+      <RSEXC>
+       <EXCEPTION>NO_DATA</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
+       <EXCEPTION>NOTHINGSELECTED</EXCEPTION>
+      </RSEXC>
+     </EXCEPTION>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>P_CUSTOM</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Customizing Clonetool2</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>S_PERNR</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Range Personalnummern</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>NO_DATA</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>keine Daten  selektiert</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>NOTHINGSELECTED</PARAMETER>
+       <KIND>X</KIND>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
    </FUNCTIONS>
   </asx:values>
  </asx:abap>
