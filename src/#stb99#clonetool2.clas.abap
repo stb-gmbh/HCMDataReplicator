@@ -122,14 +122,14 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
 
   METHOD clone.
 
-    IF at_pernr[] IS INITIAL.
-      RAISE nothing_selected.
-    ENDIF.
-
     CALL METHOD me->get_selected_pernr
       CHANGING
         s_pernr = s_pernr
         .
+
+    IF at_pernr[] IS INITIAL.
+      RAISE nothing_selected.
+    ENDIF.
 
     "Parameter von Quellsystem (welche Verfahren etc.)
     at_infty[] = gr_infty[].
