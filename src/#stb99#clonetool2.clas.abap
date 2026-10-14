@@ -126,6 +126,11 @@ CLASS /STB99/CLONETOOL2 IMPLEMENTATION.
       RAISE nothing_selected.
     ENDIF.
 
+    CALL METHOD me->get_selected_pernr
+      CHANGING
+        s_pernr = s_pernr
+        .
+
     "Parameter von Quellsystem (welche Verfahren etc.)
     at_infty[] = gr_infty[].
 
